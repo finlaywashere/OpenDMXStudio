@@ -1,0 +1,38 @@
+plugins {
+	// Apply the application plugin to add support for building a CLI application in Java.
+	id 'application'
+}
+
+repositories {
+	// Use JCenter for resolving dependencies.
+	jcenter()
+}
+
+dependencies {
+	implementation 'com.fazecast:jSerialComm:[2.0.0,3.0.0)'
+}
+
+application {
+	// Define the main class for the application.
+	mainClass = 'xyz.finlaym.opendmx.OpenDMXStudio'
+}
+sourceSets {
+    main {
+        java {
+            srcDir 'src/'
+        }
+    }
+}
+jar {
+    classifier = 'all'
+    from { (configurations.compileClasspath).collect { it.isDirectory() ? it : zipTree(it) } } {
+        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    }
+    manifest {
+      attributes(
+        'Class-Path': configurations.compileClasspath.collect { it.getName() }.join(' '),
+        'Main-Class': 'xyz.finlaym.opendmx.OpenDMXStudio'
+      )
+    }
+}
+
