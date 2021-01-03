@@ -8,3 +8,5 @@ bin/
 
 # Ignore Gradle build output directory
 build
+
+test_stage/

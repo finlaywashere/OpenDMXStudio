@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.fazecast.jSerialComm.SerialPort;
 
-import xyz.finlaym.opendmx.command.Command;
+import xyz.finlaym.opendmx.command.*;
 
 public class HardwareInterface {
 	private SerialPort serial;
@@ -19,5 +19,10 @@ public class HardwareInterface {
 		byte[] data = c.encode();
 		serial.getOutputStream().write(data);
 		serial.getOutputStream().flush();
+	}
+	public void setDMX(int universe, int channel, int value) throws IOException {
+		/*SendCommand cmd = new SendCommand(universe, channel,value);
+		sendCommand(cmd);*/
+		System.out.println("dmx_send uni "+universe+" chnl "+channel+" val "+value);
 	}
 }
