@@ -78,6 +78,7 @@ public class StageElement {
 					instance.getHwInterface().setDMX(c.getUniverse(), c.getChannel(), 0);
 				}
 			}
+			lastClick = 0;
 		}
 		
 		lastClick = System.currentTimeMillis();

@@ -17,6 +17,7 @@ import xyz.finlaym.opendmx.driver.HardwareInterface;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageLoader;
+import xyz.finlaym.opendmx.ui.ModeUI;
 
 public class OpenDMXStudio extends Application{
 	public static void main(String[] args) {
@@ -96,6 +97,9 @@ public class OpenDMXStudio extends Application{
 		primaryStage.show();
 		
 		root.requestFocus();
+		
+		ModeUI modeUI = new ModeUI();
+		modeUI.start(primaryStage);
 		
 		timer.start();
 	}
