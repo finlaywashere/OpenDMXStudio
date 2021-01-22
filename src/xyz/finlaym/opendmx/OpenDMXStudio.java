@@ -1,7 +1,6 @@
 package xyz.finlaym.opendmx;
 
 import java.io.File;
-import java.io.IOException;
 
 import com.fazecast.jSerialComm.SerialPort;
 
@@ -20,6 +19,9 @@ import xyz.finlaym.opendmx.stage.StageLoader;
 import xyz.finlaym.opendmx.ui.ModeUI;
 
 public class OpenDMXStudio extends Application{
+	
+	public static OpenDMXStudio INSTANCE;
+	
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -27,9 +29,12 @@ public class OpenDMXStudio extends Application{
 	private HardwareInterface hwInterface;
 	private Canvas canvas;
 	private StageContainer currentStage;
+	private ModeUI modeUI;
+	private InterfaceMode mode = InterfaceMode.DEFAULT;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		INSTANCE = this;
 		// We starting bois
 		SerialPort comPort = SerialPort.getCommPort("/dev/ttyUSB1");
 		comPort.setBaudRate(115200);
@@ -47,14 +52,19 @@ public class OpenDMXStudio extends Application{
 			int height = (int) canvas.getHeight();
 			int x = (int) event.getX();
 			int y = (int) event.getY();
-			for(StageElement elem : currentStage.getElements()) {
+			for(int i = 0; i < currentStage.getElements().size(); i++) {
+				StageElement elem = currentStage.getElements().get(i);
 				int eX = (int) (elem.getX() * width);
 				int eY = (int) (elem.getY() * height);
 				if(eX < x && eX+elem.getRadius()*2 > x) {
 					if(eY < y && eY+elem.getRadius()*2 > y) {
 						try {
-							elem.onClick(this);
-						} catch (IOException e) {
+							if(getMode() == InterfaceMode.MANUAL) {
+								elem.onClick(this);
+							}else if(getMode() == InterfaceMode.CONFIGURE) {
+								modeUI.configure(i);
+							}
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 					}
@@ -98,12 +108,22 @@ public class OpenDMXStudio extends Application{
 		
 		root.requestFocus();
 		
-		ModeUI modeUI = new ModeUI();
+		modeUI = new ModeUI();
 		modeUI.start(primaryStage);
 		
 		timer.start();
 	}
 	public HardwareInterface getHwInterface() {
 		return hwInterface;
+	}
+	public InterfaceMode getMode() {
+		return mode;
+	}
+	public void setMode(InterfaceMode mode) {
+		this.mode = mode;
+		modeUI.update();
+	}
+	public StageContainer getCurrentStage() {
+		return currentStage;
 	}
 }
