@@ -31,8 +31,8 @@ public class OpenDMXStudio extends Application{
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		// We starting bois
-		SerialPort comPort = SerialPort.getCommPorts()[0];
-		comPort.setBaudRate(9600);
+		SerialPort comPort = SerialPort.getCommPort("/dev/ttyUSB1");
+		comPort.setBaudRate(115200);
 		comPort.openPort();
 		
 		// Now we have an open port

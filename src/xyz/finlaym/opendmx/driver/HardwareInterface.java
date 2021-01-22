@@ -19,10 +19,11 @@ public class HardwareInterface {
 		byte[] data = c.encode();
 		serial.getOutputStream().write(data);
 		serial.getOutputStream().flush();
+		serial.getInputStream().read();
 	}
 	public void setDMX(int universe, int channel, int value) throws IOException {
-		/*SendCommand cmd = new SendCommand(universe, channel,value);
-		sendCommand(cmd);*/
+		SendCommand cmd = new SendCommand(universe, channel,value);
+		sendCommand(cmd);
 		System.out.println("dmx_send uni "+universe+" chnl "+channel+" val "+value);
 	}
 }
