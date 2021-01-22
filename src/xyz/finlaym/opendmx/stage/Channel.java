@@ -5,6 +5,13 @@ public class Channel {
 	private int channel;
 	private ChannelType type;
 	private int currVal = 0;
+	
+	public Channel(int universe, int channel, ChannelType type) {
+		this.channel = channel;
+		this.type = type;
+		this.universe = universe;
+	}
+	
 	public int getChannel() {
 		return channel;
 	}
@@ -20,11 +27,19 @@ public class Channel {
 	public void setCurrVal(int currVal) {
 		this.currVal = currVal;
 	}
-	public Channel(int universe, int channel, ChannelType type) {
-		this.channel = channel;
-		this.type = type;
+	
+	public void setUniverse(int universe) {
 		this.universe = universe;
 	}
+
+	public void setChannel(int channel) {
+		this.channel = channel;
+	}
+
+	public void setType(ChannelType type) {
+		this.type = type;
+	}
+
 	@Override
 	public String toString() {
 		return universe+","+channel+","+type.toString();

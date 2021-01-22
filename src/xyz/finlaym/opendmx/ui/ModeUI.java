@@ -7,8 +7,6 @@ import static xyz.finlaym.opendmx.ui.UIConstants.FONT_MEDIUM;
 import static xyz.finlaym.opendmx.ui.UIConstants.FONT_SMALL;
 import static xyz.finlaym.opendmx.ui.UIConstants.GAP;
 
-import static xyz.finlaym.opendmx.stage.ChannelType.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +26,10 @@ import xyz.finlaym.opendmx.InterfaceMode;
 import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.ChannelType;
+import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageElementType;
+import xyz.finlaym.opendmx.stage.StageLoader;
 
 public class ModeUI {
 	private Stage modeStage;
@@ -160,10 +160,12 @@ public class ModeUI {
 		
 		ComboBox<ChannelWrapper> cbxChannels = new ComboBox<ChannelWrapper>();
 		List<ChannelWrapper> wrappers = new ArrayList<ChannelWrapper>();
-		for(Channel c : elem.getChannels()) {
-			wrappers.add(new ChannelWrapper(c));
+		wrappers.add(new ChannelWrapper("Select channel!"));
+		for(int i = 0; i < elem.getChannels().length; i++) {
+			Channel c = elem.getChannels()[i];
+			wrappers.add(new ChannelWrapper(c,i+1));
 		}
-		wrappers.add(new ChannelWrapper());
+		wrappers.add(new ChannelWrapper("Add channel"));
 		cbxChannels.getItems().addAll(wrappers);
 		cbxChannels.getSelectionModel().clearAndSelect(0);
 		root.add(cbxChannels, 1, 5);
@@ -174,8 +176,29 @@ public class ModeUI {
 		root.add(lblChnlType, 0, 7);
 		
 		ComboBox<ChannelType> cbxChnlType = new ComboBox<ChannelType>();
-		cbxChnlType.getItems().addAll(ChannelType.LIGHT_MASTER,ChannelType.LIGHT_RED,ChannelType.LIGHT_GREEN,ChannelType.LIGHT_BLUE,ChannelType.LIGHT_EFFECT);
+		cbxChnlType.getItems().addAll(ChannelType.LIGHT_MASTER,ChannelType.LIGHT_RED,ChannelType.LIGHT_GREEN,ChannelType.LIGHT_BLUE,ChannelType.LIGHT_EFFECT,ChannelType.LIGHT_OTHER);
 		root.add(cbxChnlType, 1, 7);
+		
+		Label lblUniverse = new Label("Channel Universe: ");
+		lblUniverse.setFont(Font.font(FONT_SMALL));
+		root.add(lblUniverse, 0, 8);
+		
+		TextField txtUniverse = new TextField();
+		root.add(txtUniverse, 1, 8);
+		
+		Label lblChannelNum = new Label("Channel Number: ");
+		lblChannelNum.setFont(Font.font(FONT_SMALL));
+		root.add(lblChannelNum, 0, 9);
+		
+		TextField txtChannelNum = new TextField();
+		root.add(txtChannelNum, 1, 9);
+		
+		Button btnSave = new Button("Save");
+		root.add(btnSave, 1, 12);
+		
+		Label lblStatus = new Label();
+		lblStatus.setFont(Font.font(FONT_SMALL));
+		root.add(lblStatus, 0, 12);
 		
 		if(elem != null) {
 			txtName.setText(elem.getName());
@@ -198,6 +221,27 @@ public class ModeUI {
 			// Handle setting channel specific stuff
 			ChannelWrapper wrapper = cbxChannels.getValue();
 			
+			if(wrapper.getChannel() == null) {
+				cbxChnlType.getSelectionModel().clearAndSelect(5);
+				if(cbxChannels.getSelectionModel().getSelectedIndex() == 0)
+					return;
+				
+				Channel[] newChannels = new Channel[elem.getChannels().length+1];
+				for(int i = 0; i < elem.getChannels().length; i++) {
+					newChannels[i] = elem.getChannels()[i];
+				}
+				Channel c = new Channel(0, 0, ChannelType.LIGHT_OTHER);
+				newChannels[elem.getChannels().length] = c;
+				
+				cbxChannels.getItems().remove(cbxChannels.getItems().size()-1); // Remove add channel box
+				cbxChannels.getItems().add(new ChannelWrapper(c,elem.getChannels().length+1));
+				cbxChannels.getItems().add(new ChannelWrapper("Add channel"));
+				cbxChannels.getSelectionModel().clearAndSelect(newChannels.length);
+				
+				elem.setChannels(newChannels);
+				return;
+			}
+			
 			ChannelType currType = wrapper.getChannel().getType();
 			int typeIndex = 0;
 			switch(currType) {
@@ -216,11 +260,56 @@ public class ModeUI {
 			case LIGHT_EFFECT:
 				typeIndex = 4;
 				break;
+			case LIGHT_OTHER:
+				typeIndex = 5;
+				break;
 			}
 			cbxChnlType.getSelectionModel().clearAndSelect(typeIndex);
+			txtUniverse.setText(String.valueOf(wrapper.getChannel().getUniverse()));
+			txtChannelNum.setText(String.valueOf(wrapper.getChannel().getChannel()));
 		});
 		
-		Scene s = new Scene(root, 600, 400);
+		btnSave.setOnAction(event -> {
+			// Handle save
+			ChannelWrapper wrapper = cbxChannels.getSelectionModel().getSelectedItem();
+			int index = cbxChannels.getSelectionModel().getSelectedIndex()-1;
+			
+			if(wrapper.getChannel() != null) {
+				if(!isInt(txtUniverse.getText()) || !isInt(txtChannelNum.getText())) {
+					lblStatus.setText("Expected number but got letter!");
+					return;
+				}
+				
+				Channel c = wrapper.getChannel();
+				
+				c.setType(cbxChnlType.getValue());
+				c.setUniverse(Integer.valueOf(txtUniverse.getText()));
+				c.setChannel(Integer.valueOf(txtChannelNum.getText()));
+				
+				elem.getChannels()[index] = c;
+			}
+			
+			elem.setName(txtName.getText());
+			elem.setType(cbxType.getValue());
+			elem.setRadius((int) sldSize.getValue());
+			elem.setColor(pcrColour.getValue());
+			
+			StageContainer currStage = OpenDMXStudio.INSTANCE.getCurrentStage();
+			
+			currStage.getElements().set(elemIndex, elem);
+			
+			try {
+				StageLoader.saveStage(currStage.getStageDir(), currStage);
+			} catch (Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error occured!");
+				return;
+			}
+			
+			lblStatus.setText("Successfully saved!");
+		});
+		
+		Scene s = new Scene(root, 600, 600);
 		modeStage.setScene(s);
 		modeStage.setTitle("Control Panel");
 		modeStage.show();
@@ -236,5 +325,14 @@ public class ModeUI {
 	}
 	private void initManual() {
 		initDefault();
+	}
+	@SuppressWarnings("unused")
+	private static boolean isInt(String s) {
+		try {
+			int i = Integer.valueOf(s);
+			return true;
+		}catch(NumberFormatException e) {
+			return false;
+		}
 	}
 }

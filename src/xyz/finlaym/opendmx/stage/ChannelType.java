@@ -5,5 +5,6 @@ public enum ChannelType {
 	LIGHT_BLUE,
 	LIGHT_GREEN,
 	LIGHT_MASTER,
-	LIGHT_EFFECT;
+	LIGHT_EFFECT,
+	LIGHT_OTHER;
 }

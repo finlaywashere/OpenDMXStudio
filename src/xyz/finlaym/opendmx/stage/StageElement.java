@@ -89,6 +89,6 @@ public class StageElement {
 		for(Channel c : channels) {
 			channelS += ","+c.toString();
 		}
-		return x+":"+y+":"+type.toString()+":"+name+":"+channelS+":"+radius+":"+color.getRed()+","+color.getGreen()+","+color.getBlue();
+		return x+":"+y+":"+type.toString()+":"+name+":"+channelS+":"+radius+":"+(int)(color.getRed()*255)+","+(int)(color.getGreen()*255)+","+(int)(color.getBlue()*255);
 	}
 }

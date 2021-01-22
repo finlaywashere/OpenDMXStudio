@@ -51,7 +51,7 @@ public class StageLoader {
 			// Handle the error with like an FX dialogue or smth idk
 			return null;
 		}
-		return new StageContainer(elements,stageImg);
+		return new StageContainer(elements,stageImg,stageDir);
 	}
 	private static void deleteDirectory(File dir) {
 		if(!dir.isDirectory()) {

@@ -5,12 +5,12 @@ import xyz.finlaym.opendmx.stage.Channel;
 public class ChannelWrapper {
 	private Channel channel = null;
 	private String name;
-	public ChannelWrapper(Channel channel) {
+	public ChannelWrapper(Channel channel, int id) {
 		this.channel = channel;
-		this.name = "Universe #"+this.channel.getUniverse()+" Channel #"+this.channel.getChannel();
+		this.name = "Channel #"+id;
 	}
-	public ChannelWrapper() {
-		this.name = "Add channel";
+	public ChannelWrapper(String name) {
+		this.name = name;
 	}
 	public Channel getChannel() {
 		return channel;
