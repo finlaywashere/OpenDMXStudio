@@ -7,6 +7,8 @@ import static xyz.finlaym.opendmx.ui.UIConstants.FONT_MEDIUM;
 import static xyz.finlaym.opendmx.ui.UIConstants.FONT_SMALL;
 import static xyz.finlaym.opendmx.ui.UIConstants.GAP;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +20,12 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.InterfaceMode;
 import xyz.finlaym.opendmx.OpenDMXStudio;
@@ -57,7 +62,10 @@ public class ModeUI {
 			initDefault();
 			break;
 		case DEVICE:
-			initDevice();
+			if(elemIndex != -1)
+				initDevice();
+			else
+				initStageConfiguration();
 			break;
 		case MANUAL:
 			initManual();
@@ -67,6 +75,9 @@ public class ModeUI {
 			break;
 		case REPLAY:
 			initReplay();
+			break;
+		case MOVE:
+			initMove();
 			break;
 		}
 	}
@@ -84,6 +95,7 @@ public class ModeUI {
 		btnConfigure.setFont(Font.font(FONT_SMALL));
 		btnConfigure.setOnAction(event -> {
 			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.CONFIGURE);
+			configure(-1);
 		});
 		root.add(btnConfigure, 0, 1, 2, 1);
 		
@@ -107,6 +119,129 @@ public class ModeUI {
 			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.RECORD);
 		});
 		root.add(btnRecordCue, 0, 4, 2, 1);
+		
+		Button btnMove = new Button("Move Stage Element");
+		btnMove.setFont(Font.font(FONT_SMALL));
+		btnMove.setOnAction(event -> {
+			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.MOVE);
+		});
+		root.add(btnMove, 0, 5, 2, 1);
+		
+		Scene s = new Scene(root, 600, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Control Panel");
+		modeStage.show();
+	}
+	private void initMove() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblTitle = new Label("OpenDMXStudio Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		Button btnSave = new Button("Save Stage");
+		root.add(btnSave, 0, 1);
+		
+		Button btnBack = new Button("Back");
+		root.add(btnBack, 0, 3);
+		
+		Label lblStatus = new Label();
+		lblStatus.setFont(Font.font(FONT_SMALL));
+		root.add(lblStatus, 0, 4);
+		
+		btnSave.setOnAction(event -> {
+			try {
+				StageContainer stage = OpenDMXStudio.INSTANCE.getCurrentStage();
+				StageLoader.saveStage(stage.getStageDir(), stage);
+			}catch(Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error saving stage!");
+			}
+		});
+		btnBack.setOnAction(event -> {
+			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.DEFAULT);
+			update();
+		});
+		
+		Scene s = new Scene(root, 600, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Control Panel");
+		modeStage.show();
+	}
+	private void initStageConfiguration() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblTitle = new Label("OpenDMXStudio Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		Button btnLoad = new Button("Load Stage");
+		root.add(btnLoad, 0, 1);
+		
+		Button btnSave = new Button("Save Stage");
+		root.add(btnSave, 1, 1);
+		
+		Button btnAddDevice = new Button("Add DMX512 Device");
+		root.add(btnAddDevice, 0, 3);
+		
+		Button btnSetBackground = new Button("Set Background");
+		root.add(btnSetBackground, 0, 4);
+		
+		Button btnBack = new Button("Back");
+		root.add(btnBack, 0, 7);
+		
+		Label lblStatus = new Label();
+		lblStatus.setFont(Font.font(FONT_SMALL));
+		root.add(lblStatus, 0, 8);
+		
+		btnLoad.setOnAction(event -> {
+			DirectoryChooser dChooser = new DirectoryChooser();
+			dChooser.setTitle("Load Stage");
+			File stageDir = dChooser.showDialog(modeStage);
+			
+			try {
+				StageContainer stage = StageLoader.loadStage(stageDir);
+				OpenDMXStudio.INSTANCE.setCurrentStage(stage);
+				update();
+			} catch (Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error loading stage!");
+			}
+		});
+		btnSave.setOnAction(event -> {
+			try {
+				StageContainer stage = OpenDMXStudio.INSTANCE.getCurrentStage();
+				StageLoader.saveStage(stage.getStageDir(), stage);
+			}catch(Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error saving stage!");
+			}
+		});
+		btnAddDevice.setOnAction(event -> {
+			StageContainer stage = OpenDMXStudio.INSTANCE.getCurrentStage();
+			stage.getElements().add(new StageElement(.5d, .5d, StageElementType.OTHER, "New Stage Element", new Channel[0], 30, Color.RED));
+		});
+		btnSetBackground.setOnAction(event -> {
+			FileChooser fChooser = new FileChooser();
+			fChooser.setTitle("Open Background");
+			File background = fChooser.showOpenDialog(modeStage);
+			try {
+				OpenDMXStudio.INSTANCE.getCurrentStage().setBackground(new Image(new FileInputStream(background)));
+			} catch (Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error loading background!");
+			}
+		});
+		btnBack.setOnAction(event -> {
+			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.DEFAULT);
+			update();
+		});
 		
 		Scene s = new Scene(root, 600, 400);
 		modeStage.setScene(s);
@@ -196,9 +331,12 @@ public class ModeUI {
 		Button btnSave = new Button("Save");
 		root.add(btnSave, 1, 12);
 		
+		Button btnBack = new Button("Back");
+		root.add(btnBack, 0, 12);
+		
 		Label lblStatus = new Label();
 		lblStatus.setFont(Font.font(FONT_SMALL));
-		root.add(lblStatus, 0, 12);
+		root.add(lblStatus, 0, 13);
 		
 		if(elem != null) {
 			txtName.setText(elem.getName());
@@ -307,6 +445,10 @@ public class ModeUI {
 			}
 			
 			lblStatus.setText("Successfully saved!");
+		});
+		btnBack.setOnAction(event -> {
+			elemIndex = -1;
+			update();
 		});
 		
 		Scene s = new Scene(root, 600, 600);

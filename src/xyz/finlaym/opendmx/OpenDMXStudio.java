@@ -31,6 +31,7 @@ public class OpenDMXStudio extends Application{
 	private StageContainer currentStage;
 	private ModeUI modeUI;
 	private InterfaceMode mode = InterfaceMode.DEFAULT;
+	private int selected = -1;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -47,7 +48,7 @@ public class OpenDMXStudio extends Application{
 		
 		// JavaFX stuff now
 		Group root = new Group();
-		root.setOnMouseClicked(event -> {
+		root.setOnMousePressed(event -> {
 			int width = (int) canvas.getWidth();
 			int height = (int) canvas.getHeight();
 			int x = (int) event.getX();
@@ -58,10 +59,11 @@ public class OpenDMXStudio extends Application{
 				int eY = (int) (elem.getY() * height);
 				if(eX < x && eX+elem.getRadius()*2 > x) {
 					if(eY < y && eY+elem.getRadius()*2 > y) {
+						selected = i;
 						try {
 							if(getMode() == InterfaceMode.MANUAL) {
 								elem.onClick(this);
-							}else if(getMode() == InterfaceMode.CONFIGURE) {
+							}else if(getMode() == InterfaceMode.CONFIGURE || getMode() == InterfaceMode.DEVICE) {
 								modeUI.configure(i);
 							}
 						} catch (Exception e) {
@@ -71,6 +73,30 @@ public class OpenDMXStudio extends Application{
 				}
 			}
 		});
+		root.setOnMouseReleased(event -> {
+			selected = -1;
+		});
+		root.setOnMouseDragged(event -> {
+			if(selected == -1)
+				return;
+			if(getMode() != InterfaceMode.MOVE)
+				return;
+			int width = (int) canvas.getWidth();
+			int height = (int) canvas.getHeight();
+			
+			StageElement elem = currentStage.getElements().get(selected);
+			
+			double x = event.getX()/width - ((double) elem.getRadius()/width); // Convert width from x pixels to x (0.0-1.0) and offset by radius to put mouse in the middle
+			double y = event.getY()/height - ((double) elem.getRadius()/height); // Same as x but for y
+			
+			x = Math.min(x, 1d);
+			y = Math.min(y, 1d);
+			
+			elem.setX(x);
+			elem.setY(y);
+			
+		});
+		
 		int width = 1000;//(int) primaryStage.getWidth();
 		int height = 1000;//(int) primaryStage.getHeight();
 		Scene s = new Scene(root, width, height, Color.WHITE);
@@ -125,5 +151,8 @@ public class OpenDMXStudio extends Application{
 	}
 	public StageContainer getCurrentStage() {
 		return currentStage;
+	}
+	public void setCurrentStage(StageContainer currentStage) {
+		this.currentStage = currentStage;
 	}
 }
