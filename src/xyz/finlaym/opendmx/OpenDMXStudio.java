@@ -32,6 +32,7 @@ public class OpenDMXStudio extends Application{
 	private ModeUI modeUI;
 	private InterfaceMode mode = InterfaceMode.DEFAULT;
 	private int selected = -1;
+	private boolean dragged = false;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -49,6 +50,7 @@ public class OpenDMXStudio extends Application{
 		// JavaFX stuff now
 		Group root = new Group();
 		root.setOnMousePressed(event -> {
+			// When mouse pressed find the thingy
 			int width = (int) canvas.getWidth();
 			int height = (int) canvas.getHeight();
 			int x = (int) event.getX();
@@ -60,6 +62,28 @@ public class OpenDMXStudio extends Application{
 				if(eX < x && eX+elem.getRadius()*2 > x) {
 					if(eY < y && eY+elem.getRadius()*2 > y) {
 						selected = i;
+						dragged = false;
+						return;
+					}
+				}
+			}
+		});
+		root.setOnMouseReleased(event -> {
+			selected = -1;
+			if(dragged) {
+				dragged = false;
+				return;
+			}
+			int width = (int) canvas.getWidth();
+			int height = (int) canvas.getHeight();
+			int x = (int) event.getX();
+			int y = (int) event.getY();
+			for(int i = 0; i < currentStage.getElements().size(); i++) {
+				StageElement elem = currentStage.getElements().get(i);
+				int eX = (int) (elem.getX() * width);
+				int eY = (int) (elem.getY() * height);
+				if(eX < x && eX+elem.getRadius()*2 > x) {
+					if(eY < y && eY+elem.getRadius()*2 > y) {
 						try {
 							if(getMode() == InterfaceMode.MANUAL) {
 								elem.onClick(this);
@@ -69,17 +93,16 @@ public class OpenDMXStudio extends Application{
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
+						return;
 					}
 				}
 			}
 		});
-		root.setOnMouseReleased(event -> {
-			selected = -1;
-		});
 		root.setOnMouseDragged(event -> {
+			dragged = true;
 			if(selected == -1)
 				return;
-			if(getMode() != InterfaceMode.MOVE)
+			if(getMode() != InterfaceMode.CONFIGURE && getMode() != InterfaceMode.DEVICE)
 				return;
 			int width = (int) canvas.getWidth();
 			int height = (int) canvas.getHeight();

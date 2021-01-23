@@ -6,6 +6,5 @@ public enum InterfaceMode {
 	CONFIGURE,
 	MANUAL,
 	RECORD,
-	REPLAY,
-	MOVE;
+	REPLAY;
 }

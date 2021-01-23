@@ -76,9 +76,6 @@ public class ModeUI {
 		case REPLAY:
 			initReplay();
 			break;
-		case MOVE:
-			initMove();
-			break;
 		}
 	}
 	private void initDefault() {
@@ -119,52 +116,6 @@ public class ModeUI {
 			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.RECORD);
 		});
 		root.add(btnRecordCue, 0, 4, 2, 1);
-		
-		Button btnMove = new Button("Move Stage Element");
-		btnMove.setFont(Font.font(FONT_SMALL));
-		btnMove.setOnAction(event -> {
-			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.MOVE);
-		});
-		root.add(btnMove, 0, 5, 2, 1);
-		
-		Scene s = new Scene(root, 600, 400);
-		modeStage.setScene(s);
-		modeStage.setTitle("Control Panel");
-		modeStage.show();
-	}
-	private void initMove() {
-		GridPane root = new GridPane();
-		root.setHgap(GAP);
-		root.setVgap(GAP);
-		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
-		
-		Label lblTitle = new Label("OpenDMXStudio Control Panel");
-		lblTitle.setFont(Font.font(FONT_MEDIUM));
-		root.add(lblTitle, 0, 0);
-		
-		Button btnSave = new Button("Save Stage");
-		root.add(btnSave, 0, 1);
-		
-		Button btnBack = new Button("Back");
-		root.add(btnBack, 0, 3);
-		
-		Label lblStatus = new Label();
-		lblStatus.setFont(Font.font(FONT_SMALL));
-		root.add(lblStatus, 0, 4);
-		
-		btnSave.setOnAction(event -> {
-			try {
-				StageContainer stage = OpenDMXStudio.INSTANCE.getCurrentStage();
-				StageLoader.saveStage(stage.getStageDir(), stage);
-			}catch(Exception e) {
-				e.printStackTrace();
-				lblStatus.setText("Error saving stage!");
-			}
-		});
-		btnBack.setOnAction(event -> {
-			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.DEFAULT);
-			update();
-		});
 		
 		Scene s = new Scene(root, 600, 400);
 		modeStage.setScene(s);
