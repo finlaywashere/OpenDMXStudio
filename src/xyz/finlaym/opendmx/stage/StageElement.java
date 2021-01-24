@@ -1,9 +1,6 @@
 package xyz.finlaym.opendmx.stage;
 
-import java.io.IOException;
-
 import javafx.scene.paint.Color;
-import xyz.finlaym.opendmx.OpenDMXStudio;
 
 public class StageElement {
 	private double x,y; // X and y in relative stage coordinate space;
@@ -12,7 +9,6 @@ public class StageElement {
 	private Color color;
 	private int radius;
 	private StageElementType type;
-	private long lastClick = 0;
 	
 	public StageElement(double x, double y, StageElementType type, String name, Channel[] channels, int radius, Color color) {
 		this.x = x;
@@ -64,24 +60,6 @@ public class StageElement {
 	}
 	public void setRadius(int radius) {
 		this.radius = radius;
-	}
-	public void onClick(OpenDMXStudio instance) throws IOException {
-		System.out.println("CLICK!");
-		
-		if(System.currentTimeMillis() - lastClick < 1000) {
-			for(Channel c : channels) {
-				if(c.getCurrVal() == 0) {
-					c.setCurrVal(255);
-					instance.getHwInterface().setDMX(c.getUniverse(), c.getChannel(), 255);
-				}else {
-					c.setCurrVal(0);
-					instance.getHwInterface().setDMX(c.getUniverse(), c.getChannel(), 0);
-				}
-			}
-			lastClick = 0;
-		}
-		
-		lastClick = System.currentTimeMillis();
 	}
 	@Override
 	public String toString() {

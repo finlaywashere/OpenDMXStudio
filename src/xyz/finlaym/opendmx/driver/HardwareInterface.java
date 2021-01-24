@@ -18,16 +18,10 @@ public class HardwareInterface {
 	public void sendCommand(Command c) throws IOException {
 		byte[] data = c.encode();
 		if(!serial.isOpen()) {
-			System.err.println("Error: Serial port is not open!");
-			return;
+			throw new IOException("Port is not open!");
 		}
 		serial.getOutputStream().write(data);
 		serial.getOutputStream().flush();
 		serial.getInputStream().read();
-	}
-	public void setDMX(int universe, int channel, int value) throws IOException {
-		SendCommand cmd = new SendCommand(universe, channel,value);
-		sendCommand(cmd);
-		System.out.println("dmx_send uni "+universe+" chnl "+channel+" val "+value);
 	}
 }

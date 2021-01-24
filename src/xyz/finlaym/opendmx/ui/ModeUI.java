@@ -9,6 +9,7 @@ import static xyz.finlaym.opendmx.ui.UIConstants.GAP;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.InterfaceMode;
 import xyz.finlaym.opendmx.OpenDMXStudio;
+import xyz.finlaym.opendmx.command.SendCommand;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.ChannelType;
 import xyz.finlaym.opendmx.stage.StageContainer;
@@ -39,7 +41,11 @@ import xyz.finlaym.opendmx.stage.StageLoader;
 public class ModeUI {
 	private Stage modeStage;
 	private int elemIndex = -1;
+	private OpenDMXStudio dmxStudio;
 	
+	public ModeUI(OpenDMXStudio dmxStudio) {
+		this.dmxStudio = dmxStudio;
+	}
 	public void start(Stage primaryStage) {
 		modeStage = new Stage();
 		modeStage.initOwner(primaryStage);
@@ -47,14 +53,18 @@ public class ModeUI {
 	}
 	public void configure(int elemIndex) {
 		this.elemIndex = elemIndex;
-		OpenDMXStudio.INSTANCE.setMode(InterfaceMode.DEVICE);
+		dmxStudio.setMode(InterfaceMode.DEVICE);
+	}
+	public void control(int elemIndex) {
+		this.elemIndex = elemIndex;
+		dmxStudio.setMode(InterfaceMode.MANUAL);
 	}
 	public void reset() {
-		OpenDMXStudio.INSTANCE.setMode(InterfaceMode.DEFAULT);
+		dmxStudio.setMode(InterfaceMode.DEFAULT);
 		elemIndex = -1;
 	}
 	public void update() {
-		switch(OpenDMXStudio.INSTANCE.getMode()) {
+		switch(dmxStudio.getMode()) {
 		case CONFIGURE:
 			initConfigure();
 			break;
@@ -91,7 +101,7 @@ public class ModeUI {
 		Button btnConfigure = new Button("Configure");
 		btnConfigure.setFont(Font.font(FONT_SMALL));
 		btnConfigure.setOnAction(event -> {
-			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.CONFIGURE);
+			dmxStudio.setMode(InterfaceMode.CONFIGURE);
 			configure(-1);
 		});
 		root.add(btnConfigure, 0, 1, 2, 1);
@@ -99,21 +109,21 @@ public class ModeUI {
 		Button btnManual = new Button("Manual Control");
 		btnManual.setFont(Font.font(FONT_SMALL));
 		btnManual.setOnAction(event -> {
-			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.MANUAL);
+			dmxStudio.setMode(InterfaceMode.MANUAL);
 		});
 		root.add(btnManual, 0, 2, 2, 1);
 		
 		Button btnReplayCue = new Button("Replay Cues");
 		btnReplayCue.setFont(Font.font(FONT_SMALL));
 		btnReplayCue.setOnAction(event -> {
-			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.REPLAY);
+			dmxStudio.setMode(InterfaceMode.REPLAY);
 		});
 		root.add(btnReplayCue, 0, 3, 2, 1);
 		
 		Button btnRecordCue = new Button("Record Cue");
 		btnRecordCue.setFont(Font.font(FONT_SMALL));
 		btnRecordCue.setOnAction(event -> {
-			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.RECORD);
+			dmxStudio.setMode(InterfaceMode.RECORD);
 		});
 		root.add(btnRecordCue, 0, 4, 2, 1);
 		
@@ -158,7 +168,7 @@ public class ModeUI {
 			
 			try {
 				StageContainer stage = StageLoader.loadStage(stageDir);
-				OpenDMXStudio.INSTANCE.setCurrentStage(stage);
+				dmxStudio.setCurrentStage(stage);
 				update();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -167,7 +177,7 @@ public class ModeUI {
 		});
 		btnSave.setOnAction(event -> {
 			try {
-				StageContainer stage = OpenDMXStudio.INSTANCE.getCurrentStage();
+				StageContainer stage = dmxStudio.getCurrentStage();
 				StageLoader.saveStage(stage.getStageDir(), stage);
 			}catch(Exception e) {
 				e.printStackTrace();
@@ -175,7 +185,7 @@ public class ModeUI {
 			}
 		});
 		btnAddDevice.setOnAction(event -> {
-			StageContainer stage = OpenDMXStudio.INSTANCE.getCurrentStage();
+			StageContainer stage = dmxStudio.getCurrentStage();
 			stage.getElements().add(new StageElement(.5d, .5d, StageElementType.OTHER, "New Stage Element", new Channel[0], 30, Color.RED));
 		});
 		btnSetBackground.setOnAction(event -> {
@@ -183,14 +193,14 @@ public class ModeUI {
 			fChooser.setTitle("Open Background");
 			File background = fChooser.showOpenDialog(modeStage);
 			try {
-				OpenDMXStudio.INSTANCE.getCurrentStage().setBackground(new Image(new FileInputStream(background)));
+				dmxStudio.getCurrentStage().setBackground(new Image(new FileInputStream(background)));
 			} catch (Exception e) {
 				e.printStackTrace();
 				lblStatus.setText("Error loading background!");
 			}
 		});
 		btnBack.setOnAction(event -> {
-			OpenDMXStudio.INSTANCE.setMode(InterfaceMode.DEFAULT);
+			dmxStudio.setMode(InterfaceMode.DEFAULT);
 			update();
 		});
 		
@@ -200,7 +210,7 @@ public class ModeUI {
 		modeStage.show();
 	}
 	private void initDevice() {
-		StageElement elem = OpenDMXStudio.INSTANCE.getCurrentStage().getElements().get(elemIndex);
+		StageElement elem = dmxStudio.getCurrentStage().getElements().get(elemIndex);
 		
 		GridPane root = new GridPane();
 		root.setHgap(GAP);
@@ -383,7 +393,7 @@ public class ModeUI {
 			elem.setRadius((int) sldSize.getValue());
 			elem.setColor(pcrColour.getValue());
 			
-			StageContainer currStage = OpenDMXStudio.INSTANCE.getCurrentStage();
+			StageContainer currStage = dmxStudio.getCurrentStage();
 			
 			currStage.getElements().set(elemIndex, elem);
 			
@@ -417,7 +427,195 @@ public class ModeUI {
 		
 	}
 	private void initManual() {
-		initDefault();
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblTitle = new Label("OpenDMXStudio Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		if(elemIndex == -1) {
+			
+			Label lblUniverse = new Label("Universe: ");
+			lblUniverse.setFont(Font.font(FONT_SMALL));
+			root.add(lblUniverse, 0, 1);
+			
+			TextField txtUniverse = new TextField();
+			root.add(txtUniverse, 1, 1);
+			
+			Label lblChannel = new Label("Channel: ");
+			lblChannel.setFont(Font.font(FONT_SMALL));
+			root.add(lblChannel, 0, 2);
+			
+			TextField txtChannel = new TextField();
+			root.add(txtChannel, 1, 2);
+			
+			Label lblValue = new Label("Value: ");
+			lblValue.setFont(Font.font(FONT_SMALL));
+			root.add(lblValue, 0, 3);
+			
+			Slider sldValue = new Slider(0,255,0);
+			root.add(sldValue, 1, 3);
+			
+			Button btnApply = new Button("Apply");
+			root.add(btnApply, 1, 4);
+			
+			Label lblStatus = new Label();
+			lblStatus.setFont(Font.font(FONT_SMALL));
+			root.add(lblStatus, 0, 5);
+			
+			Button btnBack = new Button("Back");
+			root.add(btnBack, 0, 6);
+			
+			btnApply.setOnAction(event -> {
+				if(!isInt(txtUniverse.getText()) || !isInt(txtChannel.getText())) {
+					lblStatus.setText("Expected number but got letter!");
+					return;
+				}
+				int universe = Integer.valueOf(txtUniverse.getText());
+				int channel = Integer.valueOf(txtChannel.getText());
+				int value = (int) sldValue.getValue();
+				SendCommand cmd = new SendCommand(universe, channel, value);
+				try {
+					dmxStudio.getHwInterface().sendCommand(cmd);
+				} catch (IOException e) {
+					e.printStackTrace();
+					lblStatus.setText("Error occured!");
+					return;
+				}
+				lblStatus.setText("Successfully applied changes!");
+			});
+			btnBack.setOnAction(event -> {
+				dmxStudio.setMode(InterfaceMode.DEFAULT);
+			});
+		}else {
+			StageElement elem = dmxStudio.getCurrentStage().getElements().get(elemIndex);
+			int currRow = 1;
+			List<Slider> sliders = new ArrayList<Slider>();
+			boolean rgb = false;
+			for(Channel c : elem.getChannels()) {
+				if(c.getType() == ChannelType.LIGHT_BLUE || c.getType() == ChannelType.LIGHT_GREEN || c.getType() == ChannelType.LIGHT_RED)
+					rgb = true;
+				Label lblName = new Label(c.getType().toString());
+				lblName.setFont(Font.font(FONT_SMALL));
+				root.add(lblName, 0, currRow);
+				
+				Slider sldValue = new Slider(0,255,c.getCurrVal());
+				root.add(sldValue, 1, currRow);
+				sliders.add(sldValue);
+				
+				currRow++;
+			}
+			
+			int currR = 0, currG = 0, currB = 0;
+			for(Channel c : elem.getChannels()) {
+				if(c.getType() == ChannelType.LIGHT_RED)
+					currR = c.getCurrVal();
+				else if(c.getType() == ChannelType.LIGHT_GREEN)
+					currG = c.getCurrVal();
+				else if(c.getType() == ChannelType.LIGHT_BLUE)
+					currB = c.getCurrVal();
+			}
+			Color col = Color.rgb(currR, currG, currB);
+			
+			final ColorPicker cprRgb = new ColorPicker(col);
+			
+			if(rgb) {
+				Label lblName = new Label("LIGHT_RGB");
+				lblName.setFont(Font.font(FONT_SMALL));
+				root.add(lblName, 0, currRow);
+				
+				root.add(cprRgb, 1, currRow);
+				currRow++;
+			}
+			Button btnApply = new Button("Apply Sliders");
+			root.add(btnApply, 1, currRow);
+			
+			Button btnColour = new Button("Apply Colour");
+			btnColour.setDisable(true);
+			root.add(btnColour, 0, currRow);
+			
+			if(rgb)
+				btnColour.setDisable(false);
+			
+			Label lblStatus = new Label();
+			lblStatus.setFont(Font.font(FONT_SMALL));
+			root.add(lblStatus, 0, currRow+1);
+			
+			Button btnBack = new Button("Back");
+			root.add(btnBack, 0, currRow+2);
+			
+			btnBack.setOnAction(event -> {
+				control(-1);
+			});
+			btnColour.setOnAction(event -> {
+				Color c = cprRgb.getValue();
+				for(int i = 0; i < sliders.size(); i++) {
+					Channel chn = elem.getChannels()[i];
+					Slider sld = sliders.get(i);
+					int value = -1;
+					if(chn.getType() == ChannelType.LIGHT_RED) {
+						sld.setValue(c.getRed()*255);
+						value = (int) (c.getRed()*255);
+					}else if(chn.getType() == ChannelType.LIGHT_GREEN) {
+						sld.setValue(c.getGreen()*255);
+						value = (int) (c.getGreen()*255);
+					}else if(chn.getType() == ChannelType.LIGHT_BLUE) {
+						sld.setValue(c.getBlue()*255);
+						value = (int) (c.getBlue()*255);
+					}else if(chn.getType() == ChannelType.LIGHT_MASTER && sld.getValue() == 0) {
+						sld.setValue(255);
+						value = 255;
+					}
+					if(value != -1) {
+						chn.setCurrVal(value);
+						SendCommand cmd = new SendCommand(chn.getUniverse(), chn.getChannel(), value);
+						try {
+							dmxStudio.getHwInterface().sendCommand(cmd);
+						} catch (IOException e) {
+							e.printStackTrace();
+							lblStatus.setText("Error occured!");
+							return;
+						}
+					}
+				}
+				lblStatus.setText("Successfully applied changes!");
+			});
+			btnApply.setOnAction(event -> {
+				int r= 0, g = 0, b = 0;
+				for(int i = 0; i < sliders.size(); i++) {
+					int value = (int) sliders.get(i).getValue();
+					Channel c = elem.getChannels()[i];
+					
+					if(c.getType() == ChannelType.LIGHT_RED)
+						r = value;
+					else if(c.getType() == ChannelType.LIGHT_GREEN)
+						g = value;
+					else if(c.getType() == ChannelType.LIGHT_BLUE)
+						b = value;
+					
+					c.setCurrVal(value);
+					SendCommand cmd = new SendCommand(c.getUniverse(), c.getChannel(), value);
+					try {
+						dmxStudio.getHwInterface().sendCommand(cmd);
+					} catch (IOException e) {
+						e.printStackTrace();
+						lblStatus.setText("Error occured!");
+						return;
+					}
+				}
+				Color c = Color.rgb(r, g, b);
+				cprRgb.setValue(c);
+				lblStatus.setText("Successfully applied changes!");
+			});
+		}
+		
+		Scene s = new Scene(root, 600, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Control Panel");
+		modeStage.show();
 	}
 	@SuppressWarnings("unused")
 	private static boolean isInt(String s) {

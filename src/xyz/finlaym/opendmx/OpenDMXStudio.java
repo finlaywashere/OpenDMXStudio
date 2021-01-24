@@ -20,8 +20,6 @@ import xyz.finlaym.opendmx.ui.ModeUI;
 
 public class OpenDMXStudio extends Application{
 	
-	public static OpenDMXStudio INSTANCE;
-	
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -36,7 +34,6 @@ public class OpenDMXStudio extends Application{
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		INSTANCE = this;
 		// We starting bois
 		SerialPort comPort = SerialPort.getCommPort("/dev/ttyUSB1");
 		comPort.setBaudRate(115200);
@@ -86,7 +83,7 @@ public class OpenDMXStudio extends Application{
 					if(eY < y && eY+elem.getRadius()*2 > y) {
 						try {
 							if(getMode() == InterfaceMode.MANUAL) {
-								elem.onClick(this);
+								modeUI.control(i);
 							}else if(getMode() == InterfaceMode.CONFIGURE || getMode() == InterfaceMode.DEVICE) {
 								modeUI.configure(i);
 							}
@@ -157,7 +154,7 @@ public class OpenDMXStudio extends Application{
 		
 		root.requestFocus();
 		
-		modeUI = new ModeUI();
+		modeUI = new ModeUI(this);
 		modeUI.start(primaryStage);
 		
 		timer.start();
