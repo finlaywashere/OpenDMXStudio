@@ -450,6 +450,7 @@ public class ModeUI {
 		root.add(lblTitle, 0, 0);
 		
 		ListView<CueContainer> cues = new ListView<CueContainer>();
+		cues.getItems().addAll(dmxStudio.getCurrCue().getCues());
 		root.add(cues, 0, 1);
 		
 		Button btnLoad = new Button("Load Cues");
@@ -611,13 +612,69 @@ public class ModeUI {
 		root.setVgap(GAP);
 		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
 		
+		GridPane buttons = new GridPane();
+		buttons.setHgap(GAP);
+		buttons.setVgap(GAP);
+		buttons.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
 		Label lblTitle = new Label("OpenDMXStudio Control Panel");
 		lblTitle.setFont(Font.font(FONT_MEDIUM));
 		root.add(lblTitle, 0, 0);
 		
+		ListView<CueContainer> cues = new ListView<CueContainer>();
+		cues.getItems().addAll(dmxStudio.getCurrCue().getCues());
+		cues.setSelectionModel(null);
+		root.add(cues, 0, 1);
 		
+		Button btnLoad = new Button("Load Cues");
+		buttons.add(btnLoad, 0, 0);
 		
-		Scene s = new Scene(root, 600, 400);
+		Button btnGo = new Button("Go");
+		buttons.add(btnGo, 0, 1);
+		
+		Button btnBack = new Button("Back");
+		buttons.add(btnBack, 0, 5);
+		
+		Label lblStatus = new Label();
+		buttons.add(lblStatus, 1, 5);
+		
+		root.add(buttons, 1, 1);
+		
+		btnBack.setOnAction(event -> {
+			dmxStudio.setMode(InterfaceMode.DEFAULT);
+			update();
+		});
+		btnGo.setOnAction(event -> {
+			try {
+				dmxStudio.getCurrCue().execute(dmxStudio.getHwInterface());
+			} catch (IOException e) {
+				e.printStackTrace();
+				lblStatus.setText("Error occured!");
+			}
+			lblStatus.setText("Changed to next cue!");
+		});
+		
+		btnLoad.setOnAction(event -> {
+			FileChooser fChooser = new FileChooser();
+			fChooser.setTitle("Load Cue");
+			File cueDir = new File(dmxStudio.getCurrentStage().getStageDir(),"cues/");
+			if(!cueDir.exists())
+				cueDir.mkdirs();
+			fChooser.setInitialDirectory(cueDir);
+			File f = fChooser.showOpenDialog(modeStage);
+			try {
+				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f);
+				dmxStudio.setCurrCue(set);
+				cues.getItems().clear();
+				cues.getItems().addAll(set.getCues());
+			} catch (Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error occured!");
+			}
+			lblStatus.setText("Successfully loaded cues!");
+		});
+		
+		Scene s = new Scene(root, 700, 400);
 		modeStage.setScene(s);
 		modeStage.setTitle("Control Panel");
 		modeStage.show();

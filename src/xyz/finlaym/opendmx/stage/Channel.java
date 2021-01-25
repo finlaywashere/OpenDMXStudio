@@ -28,7 +28,7 @@ public class Channel {
 		return universe;
 	}
 	public int getCurrVal() {
-		return currVal;
+		return Math.min(currVal,255);
 	}
 	public void setCurrVal(int currVal) {
 		this.currVal = currVal;
@@ -51,7 +51,7 @@ public class Channel {
 		return universe+","+channel+","+type.toString()+","+id;
 	}
 	public static Channel fromString(String s) {
-		String[] split = s.split(",",3);
+		String[] split = s.split(",",4);
 		int universe = Integer.valueOf(split[0]);
 		int channel = Integer.valueOf(split[1]);
 		ChannelType type = ChannelType.valueOf(split[2]);

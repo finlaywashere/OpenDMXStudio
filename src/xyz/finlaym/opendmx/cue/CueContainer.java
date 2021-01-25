@@ -7,6 +7,7 @@ import java.util.List;
 import xyz.finlaym.opendmx.command.SendCommand;
 import xyz.finlaym.opendmx.driver.HardwareInterface;
 import xyz.finlaym.opendmx.stage.Channel;
+import xyz.finlaym.opendmx.stage.ChannelType;
 
 
 public class CueContainer {
@@ -36,7 +37,7 @@ public class CueContainer {
 		while(timeElapsed < maxTime) {
 			timeElapsed += ((double)(System.currentTimeMillis()-lastTime)) / 1000; // Get time elapsed in seconds
 			for(CueEntry e : entries) {
-				if(e.getTransitionType() == CueTransitionType.CROSSFADE) {
+				if(e.getTransitionType() == CueTransitionType.CROSSFADE && e.getTransitionTime() != 0 && e.getNewValue().getType() != ChannelType.LIGHT_MASTER) {
 					if(e.getTransitionTime() > timeElapsed) {
 						int diff = e.getNewValue().getCurrVal() - e.getOldValue().getCurrVal();
 						double dps = diff/e.getTransitionTime();
@@ -49,6 +50,10 @@ public class CueContainer {
 						SendCommand cmd = new SendCommand(c);
 						hw.sendCommand(cmd);
 					}
+				}else {
+					Channel c = e.getNewValue();
+					SendCommand cmd = new SendCommand(c);
+					hw.sendCommand(cmd);
 				}
 			}
 			lastTime = System.currentTimeMillis();
@@ -57,6 +62,11 @@ public class CueContainer {
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
+		}
+		for(CueEntry e : entries) {
+			Channel c = e.getNewValue();
+			SendCommand cmd = new SendCommand(c);
+			hw.sendCommand(cmd);
 		}
 	}
 	@Override
