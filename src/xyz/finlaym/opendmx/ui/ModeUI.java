@@ -523,14 +523,14 @@ public class ModeUI {
 							int id2 = entry.getNewValue().getId();
 							if(id == id2) {
 								// Found the old value of the channel
-								oldValue = entry.getNewValue().getCurrVal();
+								oldValue = entry.getNewValue().getCurrVal(dmxStudio);
 								break;
 							}
 						}
 					}
 					Channel c1 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId());
-					c1.setCurrVal(oldValue);
-					CueEntry entry = new CueEntry(c, c1, cbxTypes.getSelectionModel().getSelectedItem(),sldTime.getValue());
+					c1.setCurrVal(oldValue,dmxStudio);
+					CueEntry entry = new CueEntry(c, c1, cbxTypes.getSelectionModel().getSelectedItem(),sldTime.getValue(),dmxStudio);
 					cue.getEntries().add(entry);
 				}
 			}
@@ -569,7 +569,7 @@ public class ModeUI {
 			fChooser.setInitialDirectory(cueDir);
 			File f = fChooser.showOpenDialog(modeStage);
 			try {
-				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f);
+				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f,dmxStudio);
 				dmxStudio.setCurrCue(set);
 				cues.getItems().clear();
 				cues.getItems().addAll(set.getCues());
@@ -646,7 +646,11 @@ public class ModeUI {
 		});
 		btnGo.setOnAction(event -> {
 			try {
-				dmxStudio.getCurrCue().execute(dmxStudio.getHwInterface());
+				boolean success = dmxStudio.getCurrCue().execute(dmxStudio.getHwInterface(),dmxStudio);
+				if(!success) {
+					lblStatus.setText("Reached end of cues!");
+					return;
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				lblStatus.setText("Error occured!");
@@ -663,7 +667,7 @@ public class ModeUI {
 			fChooser.setInitialDirectory(cueDir);
 			File f = fChooser.showOpenDialog(modeStage);
 			try {
-				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f);
+				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f,dmxStudio);
 				dmxStudio.setCurrCue(set);
 				cues.getItems().clear();
 				cues.getItems().addAll(set.getCues());
@@ -755,7 +759,7 @@ public class ModeUI {
 				lblName.setFont(Font.font(FONT_SMALL));
 				root.add(lblName, 0, currRow);
 				
-				Slider sldValue = new Slider(0,255,c.getCurrVal());
+				Slider sldValue = new Slider(0,255,c.getCurrVal(dmxStudio));
 				root.add(sldValue, 1, currRow);
 				sliders.add(sldValue);
 				
@@ -765,11 +769,11 @@ public class ModeUI {
 			int currR = 0, currG = 0, currB = 0;
 			for(Channel c : elem.getChannels()) {
 				if(c.getType() == ChannelType.LIGHT_RED)
-					currR = c.getCurrVal();
+					currR = c.getCurrVal(dmxStudio);
 				else if(c.getType() == ChannelType.LIGHT_GREEN)
-					currG = c.getCurrVal();
+					currG = c.getCurrVal(dmxStudio);
 				else if(c.getType() == ChannelType.LIGHT_BLUE)
-					currB = c.getCurrVal();
+					currB = c.getCurrVal(dmxStudio);
 			}
 			Color col = Color.rgb(currR, currG, currB);
 			
@@ -823,7 +827,7 @@ public class ModeUI {
 						value = 255;
 					}
 					if(value != -1) {
-						chn.setCurrVal(value);
+						chn.setCurrVal(value,dmxStudio);
 						SendCommand cmd = new SendCommand(chn.getUniverse(), chn.getChannel(), value);
 						try {
 							dmxStudio.getHwInterface().sendCommand(cmd);
@@ -849,7 +853,7 @@ public class ModeUI {
 					else if(c.getType() == ChannelType.LIGHT_BLUE)
 						b = value;
 					
-					c.setCurrVal(value);
+					c.setCurrVal(value,dmxStudio);
 					SendCommand cmd = new SendCommand(c.getUniverse(), c.getChannel(), value);
 					try {
 						dmxStudio.getHwInterface().sendCommand(cmd);

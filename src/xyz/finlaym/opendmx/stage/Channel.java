@@ -1,5 +1,7 @@
 package xyz.finlaym.opendmx.stage;
 
+import xyz.finlaym.opendmx.OpenDMXStudio;
+
 public class Channel {
 	private int universe;
 	private int channel;
@@ -27,11 +29,15 @@ public class Channel {
 	public int getUniverse() {
 		return universe;
 	}
-	public int getCurrVal() {
-		return Math.min(currVal,255);
+	public int getCurrValRaw() {
+		return Math.min(currVal, 255);
 	}
-	public void setCurrVal(int currVal) {
+	public int getCurrVal(OpenDMXStudio studio) {
+		return Math.min(studio.getCRegistry().getChannel(this),255);
+	}
+	public void setCurrVal(int currVal, OpenDMXStudio studio) {
 		this.currVal = currVal;
+		studio.getCRegistry().setChannel(this);
 	}
 	
 	public void setUniverse(int universe) {

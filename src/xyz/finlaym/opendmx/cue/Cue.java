@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.driver.HardwareInterface;
 
 public class Cue {
@@ -14,10 +15,10 @@ public class Cue {
 		this.entries = new ArrayList<CueContainer>();
 	}
 	
-	public boolean executeNext(HardwareInterface hw) throws IOException {
+	public boolean executeNext(HardwareInterface hw, OpenDMXStudio studio) throws IOException {
 		if(curr >= entries.size())
 			return false;
-		entries.get(curr).execute(hw);
+		entries.get(curr).execute(hw, studio);
 		curr++;
 		return true;
 	}

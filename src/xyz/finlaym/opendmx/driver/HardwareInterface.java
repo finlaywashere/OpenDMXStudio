@@ -18,9 +18,7 @@ public class HardwareInterface {
 	public void sendCommand(Command c) throws IOException {
 		byte[] data = c.encode();
 		if(!serial.isOpen()) {
-			//throw new IOException("Port is not open!");
-			System.err.println("Error port is not open!");
-			return;
+			throw new IOException("Port is not open!");
 		}
 		serial.getOutputStream().write(data);
 		serial.getOutputStream().flush();

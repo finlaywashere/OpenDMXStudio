@@ -1,5 +1,6 @@
 package xyz.finlaym.opendmx.command;
 
+import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.stage.Channel;
 
 public class SendCommand extends Command {
@@ -11,8 +12,8 @@ public class SendCommand extends Command {
 		this.channel = channel;
 		this.value = value;
 	}
-	public SendCommand(Channel c) {
-		this(c.getUniverse(), c.getChannel(), c.getCurrVal());
+	public SendCommand(Channel c, OpenDMXStudio studio) {
+		this(c.getUniverse(), c.getChannel(), c.getCurrVal(studio));
 	}
 	public int getUniverse() {
 		return universe;
@@ -34,7 +35,6 @@ public class SendCommand extends Command {
 	}
 	@Override
 	public byte[] encode() {
-		System.out.println("dmx_send "+universe+" "+channel+" "+value);
 		// Send has data format
 		// command code, universe #, value low, value high
 		return new byte[] {(byte) commandCode, (byte) universe, (byte) channel, (byte) (channel >> 8), (byte) value};

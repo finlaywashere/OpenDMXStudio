@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.command.SendCommand;
 import xyz.finlaym.opendmx.driver.HardwareInterface;
 import xyz.finlaym.opendmx.stage.Channel;
@@ -25,7 +26,7 @@ public class CueContainer {
 		return entries;
 	}
 	
-	public void execute(HardwareInterface hw) throws IOException {
+	public void execute(HardwareInterface hw, OpenDMXStudio studio) throws IOException {
 		double maxTime = 0;
 		for(CueEntry e : entries) {
 			if(e.getTransitionTime() > maxTime)
@@ -39,33 +40,33 @@ public class CueContainer {
 			for(CueEntry e : entries) {
 				if(e.getTransitionType() == CueTransitionType.CROSSFADE && e.getTransitionTime() != 0 && e.getNewValue().getType() != ChannelType.LIGHT_MASTER) {
 					if(e.getTransitionTime() > timeElapsed) {
-						int diff = e.getNewValue().getCurrVal() - e.getOldValue().getCurrVal();
+						int diff = e.getNewValue().getCurrValRaw() - e.getOldValue().getCurrValRaw();
 						double dps = diff/e.getTransitionTime();
-						int newValue = e.getOldValue().getCurrVal() + (int) (timeElapsed * dps);
+						int newValue = e.getOldValue().getCurrValRaw() + (int) (timeElapsed * dps);
 						Channel c = e.getNewValue();
 						SendCommand cmd = new SendCommand(c.getUniverse(),c.getChannel(),newValue);
 						hw.sendCommand(cmd);
 					}else {
 						Channel c = e.getNewValue();
-						SendCommand cmd = new SendCommand(c);
+						SendCommand cmd = new SendCommand(c,studio);
 						hw.sendCommand(cmd);
 					}
 				}else {
 					Channel c = e.getNewValue();
-					SendCommand cmd = new SendCommand(c);
+					SendCommand cmd = new SendCommand(c,studio);
 					hw.sendCommand(cmd);
 				}
 			}
 			lastTime = System.currentTimeMillis();
 			try {
-				Thread.sleep(250); // Sleep for a quarter second
+				Thread.sleep(200); // Sleep for a fifth of a second
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
 		}
 		for(CueEntry e : entries) {
 			Channel c = e.getNewValue();
-			SendCommand cmd = new SendCommand(c);
+			SendCommand cmd = new SendCommand(c,studio);
 			hw.sendCommand(cmd);
 		}
 	}

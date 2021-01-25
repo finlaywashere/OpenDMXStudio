@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.cue.CueSet;
 import xyz.finlaym.opendmx.driver.HardwareInterface;
+import xyz.finlaym.opendmx.stage.ChannelRegistry;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageLoader;
@@ -33,6 +34,7 @@ public class OpenDMXStudio extends Application{
 	private int selected = -1;
 	private boolean dragged = false;
 	private CueSet currCue = new CueSet();
+	private ChannelRegistry cRegistry = new ChannelRegistry();
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -183,16 +185,10 @@ public class OpenDMXStudio extends Application{
 	public void setCurrCue(CueSet currCue) {
 		this.currCue = currCue;
 	}
-	public Canvas getCanvas() {
-		return canvas;
-	}
 	public ModeUI getModeUI() {
 		return modeUI;
 	}
-	public int getSelected() {
-		return selected;
-	}
-	public boolean isDragged() {
-		return dragged;
+	public ChannelRegistry getCRegistry() {
+		return cRegistry;
 	}
 }
