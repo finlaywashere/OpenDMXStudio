@@ -33,8 +33,10 @@ import xyz.finlaym.opendmx.InterfaceMode;
 import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.command.SendCommand;
 import xyz.finlaym.opendmx.cue.CueContainer;
+import xyz.finlaym.opendmx.cue.CueEntry;
 import xyz.finlaym.opendmx.cue.CueLoader;
 import xyz.finlaym.opendmx.cue.CueSet;
+import xyz.finlaym.opendmx.cue.CueTransitionType;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.ChannelType;
 import xyz.finlaym.opendmx.stage.StageContainer;
@@ -187,7 +189,14 @@ public class ModeUI {
 		});
 		btnAddDevice.setOnAction(event -> {
 			StageContainer stage = dmxStudio.getCurrentStage();
-			stage.getElements().add(new StageElement(.5d, .5d, StageElementType.OTHER, "New Stage Element", new Channel[0], 30, Color.RED));
+			int maxId = Integer.MIN_VALUE;
+			for(StageElement elem : stage.getElements()) {
+				if(elem.getId() > maxId)
+					maxId = elem.getId();
+			}
+			if(maxId < 0)
+				maxId = 0;
+			stage.getElements().add(new StageElement(.5d, .5d, StageElementType.OTHER, "New Stage Element", new Channel[0], 30, Color.RED, maxId+1));
 		});
 		btnSetBackground.setOnAction(event -> {
 			FileChooser fChooser = new FileChooser();
@@ -330,7 +339,14 @@ public class ModeUI {
 				for(int i = 0; i < elem.getChannels().length; i++) {
 					newChannels[i] = elem.getChannels()[i];
 				}
-				Channel c = new Channel(0, 0, ChannelType.LIGHT_OTHER);
+				int maxId = Integer.MIN_VALUE;
+				for(Channel c : elem.getChannels()) {
+					if(c.getId() > maxId)
+						maxId = c.getId();
+				}
+				if(maxId < 0)
+					maxId = 0;
+				Channel c = new Channel(0, 0, ChannelType.LIGHT_OTHER,maxId+1);
 				newChannels[elem.getChannels().length] = c;
 				
 				cbxChannels.getItems().remove(cbxChannels.getItems().size()-1); // Remove add channel box
@@ -455,16 +471,39 @@ public class ModeUI {
 		TextField txtName = new TextField();
 		buttons.add(txtName, 1, 4);
 		
+		Label lblTime = new Label("Transition Time: ");
+		lblTime.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblTime, 0, 5);
+		
+		Slider sldTime = new Slider(0, 30, 5);
+		buttons.add(sldTime, 1, 5);
+		
+		Label lblType = new Label("Transition Type: ");
+		lblType.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblType, 0, 6);
+		
+		ComboBox<CueTransitionType> cbxTypes = new ComboBox<CueTransitionType>();
+		cbxTypes.getItems().add(CueTransitionType.CROSSFADE);
+		buttons.add(cbxTypes, 1, 6);
+		
 		Button btnAdd = new Button("Add");
-		buttons.add(btnAdd, 0, 5);
+		buttons.add(btnAdd, 0, 7);
 		
 		Button btnRemove = new Button("Remove");
-		buttons.add(btnRemove, 1, 5);
+		buttons.add(btnRemove, 1, 7);
+		
+		Button btnBack = new Button("Back");
+		buttons.add(btnBack, 0, 8);
 		
 		Label lblStatus = new Label();
-		buttons.add(lblStatus, 0, 6);
+		buttons.add(lblStatus, 1, 8);
 		
 		root.add(buttons, 1, 1);
+		
+		btnBack.setOnAction(event -> {
+			dmxStudio.setMode(InterfaceMode.DEFAULT);
+			update();
+		});
 		
 		btnAdd.setOnAction(event -> {
 			String name = txtName.getText();
@@ -472,6 +511,29 @@ public class ModeUI {
 				name = "Untitled Cue";
 			txtName.setText("");
 			CueContainer cue = new CueContainer(name);
+			
+			for(StageElement elem : dmxStudio.getCurrentStage().getElements()) {
+				for(Channel c : elem.getChannels()) {
+					int id = c.getId();
+					int oldValue = 0;
+					// Find the previous value of the channel, if there is none then it defaults to 0
+					if(cues.getItems().size() > 0) {
+						for(CueEntry entry : cues.getItems().get(cues.getItems().size()-1).getEntries()) {
+							int id2 = entry.getNewValue().getId();
+							if(id == id2) {
+								// Found the old value of the channel
+								oldValue = entry.getNewValue().getCurrVal();
+								break;
+							}
+						}
+					}
+					Channel c1 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId());
+					c1.setCurrVal(oldValue);
+					CueEntry entry = new CueEntry(c, c1, cbxTypes.getSelectionModel().getSelectedItem(),sldTime.getValue());
+					cue.getEntries().add(entry);
+				}
+			}
+			
 			cues.getItems().add(cue);
 		});
 		btnRemove.setOnAction(event -> {
@@ -535,7 +597,7 @@ public class ModeUI {
 				e.printStackTrace();
 				lblStatus.setText("Error occured!");
 			}
-			lblStatus.setText("Successfully saved!");
+			lblStatus.setText("Successfully saved cues!");
 		});
 		
 		Scene s = new Scene(root, 800, 400);

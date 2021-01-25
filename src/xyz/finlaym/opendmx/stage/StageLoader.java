@@ -28,7 +28,7 @@ public class StageLoader {
 				String s = in.nextLine();
 				if(s.trim().isEmpty())
 					continue;
-				String[] split = s.split(":",7);
+				String[] split = s.split(":",8);
 				double x = Double.valueOf(split[0]);
 				double y = Double.valueOf(split[1]);
 				StageElementType type = StageElementType.valueOf(split[2]);
@@ -37,12 +37,13 @@ public class StageLoader {
 				int length = Integer.valueOf(split2[0]);
 				Channel[] channels = new Channel[length];
 				for(int i = 0; i < length; i++) {
-					channels[i] = new Channel(Integer.valueOf(split2[i*3+1]),Integer.valueOf(split2[i*3+2]), ChannelType.valueOf(split2[i*3+3]));
+					channels[i] = new Channel(Integer.valueOf(split2[i*4+1]),Integer.valueOf(split2[i*4+2]), ChannelType.valueOf(split2[i*4+3]), Integer.valueOf(split2[i*4+4]));
 				}
 				int radius = Integer.valueOf(split[5]);
 				String[] split3 = split[6].split(",");
 				Color color = Color.rgb(Integer.valueOf(split3[0]),Integer.valueOf(split3[1]),Integer.valueOf(split3[2]));
-				StageElement elem = new StageElement(x,y,type,name,channels,radius,color);
+				int id = Integer.valueOf(split[7]);
+				StageElement elem = new StageElement(x,y,type,name,channels,radius,color,id);
 				elements.add(elem);
 			}
 			in.close();

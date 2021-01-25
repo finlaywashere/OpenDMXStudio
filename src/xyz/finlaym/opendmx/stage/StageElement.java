@@ -9,8 +9,9 @@ public class StageElement {
 	private Color color;
 	private int radius;
 	private StageElementType type;
+	private int id;
 	
-	public StageElement(double x, double y, StageElementType type, String name, Channel[] channels, int radius, Color color) {
+	public StageElement(double x, double y, StageElementType type, String name, Channel[] channels, int radius, Color color, int id) {
 		this.x = x;
 		this.y = y;
 		this.type = type;
@@ -18,6 +19,7 @@ public class StageElement {
 		this.channels = channels;
 		this.radius = radius;
 		this.color = color;
+		this.id = id;
 	}
 	public double getX() {
 		return x;
@@ -61,12 +63,15 @@ public class StageElement {
 	public void setRadius(int radius) {
 		this.radius = radius;
 	}
+	public int getId() {
+		return id;
+	}
 	@Override
 	public String toString() {
 		String channelS = ""+channels.length;
 		for(Channel c : channels) {
 			channelS += ","+c.toString();
 		}
-		return x+":"+y+":"+type.toString()+":"+name+":"+channelS+":"+radius+":"+(int)(color.getRed()*255)+","+(int)(color.getGreen()*255)+","+(int)(color.getBlue()*255);
+		return x+":"+y+":"+type.toString()+":"+name+":"+channelS+":"+radius+":"+(int)(color.getRed()*255)+","+(int)(color.getGreen()*255)+","+(int)(color.getBlue()*255)+":"+id;
 	}
 }

@@ -5,13 +5,19 @@ public class Channel {
 	private int channel;
 	private ChannelType type;
 	private int currVal = 0;
+	private int id;
 	
-	public Channel(int universe, int channel, ChannelType type) {
+	public Channel(int universe, int channel, ChannelType type, int id) {
 		this.channel = channel;
 		this.type = type;
 		this.universe = universe;
+		this.id = id;
 	}
 	
+	public int getId() {
+		return id;
+	}
+
 	public int getChannel() {
 		return channel;
 	}
@@ -42,13 +48,14 @@ public class Channel {
 
 	@Override
 	public String toString() {
-		return universe+","+channel+","+type.toString();
+		return universe+","+channel+","+type.toString()+","+id;
 	}
 	public static Channel fromString(String s) {
 		String[] split = s.split(",",3);
 		int universe = Integer.valueOf(split[0]);
 		int channel = Integer.valueOf(split[1]);
 		ChannelType type = ChannelType.valueOf(split[2]);
-		return new Channel(universe,channel,type);
+		int id = Integer.valueOf(split[3]);
+		return new Channel(universe,channel,type,id);
 	}
 }
