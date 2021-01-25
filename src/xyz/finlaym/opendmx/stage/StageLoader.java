@@ -14,6 +14,7 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import xyz.finlaym.opendmx.Constants;
+import xyz.finlaym.opendmx.Utils;
 
 public class StageLoader {
 	public static StageContainer loadStage(File stageDir) throws Exception{
@@ -53,18 +54,8 @@ public class StageLoader {
 		}
 		return new StageContainer(elements,stageImg,stageDir);
 	}
-	private static void deleteDirectory(File dir) {
-		if(!dir.isDirectory()) {
-			dir.delete();
-			return;
-		}
-		for(File f : dir.listFiles()) {
-			deleteDirectory(f);
-		}
-		dir.delete();
-	}
 	public static void saveStage(File stageDir, StageContainer stage) throws Exception{
-		deleteDirectory(stageDir);
+		Utils.deleteDirectory(stageDir);
 		stageDir.mkdirs();
 		
 		BufferedImage img = SwingFXUtils.fromFXImage(stage.getBackground(), null);

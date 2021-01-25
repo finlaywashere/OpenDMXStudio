@@ -1,5 +1,7 @@
 package xyz.finlaym.opendmx.command;
 
+import xyz.finlaym.opendmx.stage.Channel;
+
 public class SendCommand extends Command {
 
 	private int universe,value, channel;
@@ -8,6 +10,9 @@ public class SendCommand extends Command {
 		this.universe = universe;
 		this.channel = channel;
 		this.value = value;
+	}
+	public SendCommand(Channel c) {
+		this(c.getUniverse(), c.getChannel(), c.getCurrVal());
 	}
 	public int getUniverse() {
 		return universe;

@@ -12,6 +12,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import xyz.finlaym.opendmx.cue.CueSet;
 import xyz.finlaym.opendmx.driver.HardwareInterface;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
@@ -31,6 +32,7 @@ public class OpenDMXStudio extends Application{
 	private InterfaceMode mode = InterfaceMode.DEFAULT;
 	private int selected = -1;
 	private boolean dragged = false;
+	private CueSet currCue = new CueSet();
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -84,7 +86,7 @@ public class OpenDMXStudio extends Application{
 						try {
 							if(getMode() == InterfaceMode.MANUAL) {
 								modeUI.control(i);
-							}else if(getMode() == InterfaceMode.CONFIGURE || getMode() == InterfaceMode.DEVICE) {
+							}else if(getMode() == InterfaceMode.DEVICE) {
 								modeUI.configure(i);
 							}
 						} catch (Exception e) {
@@ -99,7 +101,7 @@ public class OpenDMXStudio extends Application{
 			dragged = true;
 			if(selected == -1)
 				return;
-			if(getMode() != InterfaceMode.CONFIGURE && getMode() != InterfaceMode.DEVICE)
+			if(getMode() != InterfaceMode.DEVICE)
 				return;
 			int width = (int) canvas.getWidth();
 			int height = (int) canvas.getHeight();
@@ -174,5 +176,23 @@ public class OpenDMXStudio extends Application{
 	}
 	public void setCurrentStage(StageContainer currentStage) {
 		this.currentStage = currentStage;
+	}
+	public CueSet getCurrCue() {
+		return currCue;
+	}
+	public void setCurrCue(CueSet currCue) {
+		this.currCue = currCue;
+	}
+	public Canvas getCanvas() {
+		return canvas;
+	}
+	public ModeUI getModeUI() {
+		return modeUI;
+	}
+	public int getSelected() {
+		return selected;
+	}
+	public boolean isDragged() {
+		return dragged;
 	}
 }

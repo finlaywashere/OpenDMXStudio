@@ -19,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -31,6 +32,9 @@ import javafx.stage.Stage;
 import xyz.finlaym.opendmx.InterfaceMode;
 import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.command.SendCommand;
+import xyz.finlaym.opendmx.cue.CueContainer;
+import xyz.finlaym.opendmx.cue.CueLoader;
+import xyz.finlaym.opendmx.cue.CueSet;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.ChannelType;
 import xyz.finlaym.opendmx.stage.StageContainer;
@@ -65,9 +69,6 @@ public class ModeUI {
 	}
 	public void update() {
 		switch(dmxStudio.getMode()) {
-		case CONFIGURE:
-			initConfigure();
-			break;
 		case DEFAULT:
 			initDefault();
 			break;
@@ -101,7 +102,7 @@ public class ModeUI {
 		Button btnConfigure = new Button("Configure");
 		btnConfigure.setFont(Font.font(FONT_SMALL));
 		btnConfigure.setOnAction(event -> {
-			dmxStudio.setMode(InterfaceMode.CONFIGURE);
+			dmxStudio.setMode(InterfaceMode.DEVICE);
 			configure(-1);
 		});
 		root.add(btnConfigure, 0, 1, 2, 1);
@@ -417,14 +418,147 @@ public class ModeUI {
 		modeStage.setTitle("Control Panel");
 		modeStage.show();
 	}
-	private void initConfigure() {
-		
-	}
 	private void initRecord() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
 		
+		GridPane buttons = new GridPane();
+		buttons.setHgap(GAP);
+		buttons.setVgap(GAP);
+		buttons.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblTitle = new Label("OpenDMXStudio Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		ListView<CueContainer> cues = new ListView<CueContainer>();
+		root.add(cues, 0, 1);
+		
+		Button btnLoad = new Button("Load Cues");
+		buttons.add(btnLoad, 0, 0);
+		
+		Button btnSave = new Button("Save Cues");
+		buttons.add(btnSave, 1, 0);
+		
+		Button btnUp = new Button("Move Up");
+		buttons.add(btnUp, 0, 2);
+		
+		Button btnDown = new Button("Move Down");
+		buttons.add(btnDown, 1, 2);
+		
+		Label lblName = new Label("Name: ");
+		lblName.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblName, 0, 4);
+		
+		TextField txtName = new TextField();
+		buttons.add(txtName, 1, 4);
+		
+		Button btnAdd = new Button("Add");
+		buttons.add(btnAdd, 0, 5);
+		
+		Button btnRemove = new Button("Remove");
+		buttons.add(btnRemove, 1, 5);
+		
+		Label lblStatus = new Label();
+		buttons.add(lblStatus, 0, 6);
+		
+		root.add(buttons, 1, 1);
+		
+		btnAdd.setOnAction(event -> {
+			String name = txtName.getText();
+			if(name.trim().equals(""))
+				name = "Untitled Cue";
+			txtName.setText("");
+			CueContainer cue = new CueContainer(name);
+			cues.getItems().add(cue);
+		});
+		btnRemove.setOnAction(event -> {
+			if(cues.getSelectionModel().isEmpty())
+				return;
+			cues.getItems().remove(cues.getSelectionModel().getSelectedIndex());
+		});
+		btnUp.setOnAction(event -> {
+			int index = cues.getSelectionModel().getSelectedIndex();
+			if(index == 0)
+				return;
+			CueContainer tmp = cues.getItems().get(index-1);
+			cues.getItems().set(index-1, cues.getItems().get(index));
+			cues.getItems().set(index, tmp);
+			cues.getSelectionModel().clearAndSelect(index-1);
+		});
+		btnDown.setOnAction(event -> {
+			int index = cues.getSelectionModel().getSelectedIndex();
+			if(index == cues.getItems().size()-1)
+				return;
+			CueContainer tmp = cues.getItems().get(index+1);
+			cues.getItems().set(index+1, cues.getItems().get(index));
+			cues.getItems().set(index, tmp);
+			cues.getSelectionModel().clearAndSelect(index+1);
+		});
+		btnLoad.setOnAction(event -> {
+			FileChooser fChooser = new FileChooser();
+			fChooser.setTitle("Load Cue");
+			File cueDir = new File(dmxStudio.getCurrentStage().getStageDir(),"cues/");
+			if(!cueDir.exists())
+				cueDir.mkdirs();
+			fChooser.setInitialDirectory(cueDir);
+			File f = fChooser.showOpenDialog(modeStage);
+			try {
+				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f);
+				dmxStudio.setCurrCue(set);
+				cues.getItems().clear();
+				cues.getItems().addAll(set.getCues());
+			} catch (Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error occured!");
+			}
+			lblStatus.setText("Successfully loaded cues!");
+		});
+		btnSave.setOnAction(event -> {
+			// Apply changes and save
+			CueSet set = dmxStudio.getCurrCue();
+			set.getCues().clear();
+			set.getCues().addAll(cues.getItems());
+			dmxStudio.setCurrCue(set);
+			FileChooser fChooser = new FileChooser();
+			fChooser.setTitle("Save Cue");
+			File cueDir = new File(dmxStudio.getCurrentStage().getStageDir(),"cues/");
+			if(!cueDir.exists())
+				cueDir.mkdirs();
+			fChooser.setInitialDirectory(cueDir);
+			File f = fChooser.showSaveDialog(modeStage);
+			try {
+				CueLoader.saveCue(dmxStudio.getCurrentStage(),set,f);
+			} catch (Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error occured!");
+			}
+			lblStatus.setText("Successfully saved!");
+		});
+		
+		Scene s = new Scene(root, 800, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Control Panel");
+		modeStage.show();
 	}
 	private void initReplay() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
 		
+		Label lblTitle = new Label("OpenDMXStudio Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		
+		
+		Scene s = new Scene(root, 600, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Control Panel");
+		modeStage.show();
 	}
 	private void initManual() {
 		GridPane root = new GridPane();

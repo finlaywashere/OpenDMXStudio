@@ -44,4 +44,11 @@ public class Channel {
 	public String toString() {
 		return universe+","+channel+","+type.toString();
 	}
+	public static Channel fromString(String s) {
+		String[] split = s.split(",",3);
+		int universe = Integer.valueOf(split[0]);
+		int channel = Integer.valueOf(split[1]);
+		ChannelType type = ChannelType.valueOf(split[2]);
+		return new Channel(universe,channel,type);
+	}
 }

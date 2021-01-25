@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.fazecast.jSerialComm.SerialPort;
 
-import xyz.finlaym.opendmx.command.*;
+import xyz.finlaym.opendmx.command.Command;
 
 public class HardwareInterface {
 	private SerialPort serial;
