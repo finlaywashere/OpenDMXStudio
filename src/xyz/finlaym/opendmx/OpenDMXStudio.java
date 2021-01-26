@@ -18,6 +18,8 @@ import xyz.finlaym.opendmx.stage.ChannelRegistry;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageLoader;
+import xyz.finlaym.opendmx.submaster.SubMasterLoader;
+import xyz.finlaym.opendmx.submaster.SubMasterSet;
 import xyz.finlaym.opendmx.ui.ModeUI;
 
 public class OpenDMXStudio extends Application{
@@ -35,6 +37,7 @@ public class OpenDMXStudio extends Application{
 	private boolean dragged = false;
 	private CueSet currCue = new CueSet();
 	private ChannelRegistry cRegistry = new ChannelRegistry();
+	private SubMasterSet masters;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -47,6 +50,7 @@ public class OpenDMXStudio extends Application{
 		hwInterface = new HardwareInterface(comPort);
 		
 		currentStage = StageLoader.loadStage(new File("test_stage/"));
+		masters = SubMasterLoader.loadSubMasters(currentStage);
 		
 		// JavaFX stuff now
 		Group root = new Group();
@@ -190,5 +194,11 @@ public class OpenDMXStudio extends Application{
 	}
 	public ChannelRegistry getCRegistry() {
 		return cRegistry;
+	}
+	public SubMasterSet getMasters() {
+		return masters;
+	}
+	public void setMasters(SubMasterSet masters) {
+		this.masters = masters;
 	}
 }

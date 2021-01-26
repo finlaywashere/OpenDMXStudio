@@ -13,7 +13,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
@@ -43,11 +46,16 @@ import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageElementType;
 import xyz.finlaym.opendmx.stage.StageLoader;
+import xyz.finlaym.opendmx.submaster.SubMaster;
+import xyz.finlaym.opendmx.submaster.SubMasterLoader;
+import xyz.finlaym.opendmx.submaster.SubMasterSet;
+import xyz.finlaym.opendmx.submaster.SubMasterType;
 
 public class ModeUI {
 	private Stage modeStage;
 	private int elemIndex = -1;
 	private OpenDMXStudio dmxStudio;
+	private boolean submaster = false;
 	
 	public ModeUI(OpenDMXStudio dmxStudio) {
 		this.dmxStudio = dmxStudio;
@@ -59,15 +67,19 @@ public class ModeUI {
 	}
 	public void configure(int elemIndex) {
 		this.elemIndex = elemIndex;
+		this.submaster = false;
 		dmxStudio.setMode(InterfaceMode.DEVICE);
 	}
 	public void control(int elemIndex) {
 		this.elemIndex = elemIndex;
+		this.submaster = false;
 		dmxStudio.setMode(InterfaceMode.MANUAL);
 	}
 	public void reset() {
 		dmxStudio.setMode(InterfaceMode.DEFAULT);
-		elemIndex = -1;
+		this.elemIndex = -1;
+		this.submaster = false;
+		update();
 	}
 	public void update() {
 		switch(dmxStudio.getMode()) {
@@ -75,7 +87,9 @@ public class ModeUI {
 			initDefault();
 			break;
 		case DEVICE:
-			if(elemIndex != -1)
+			if(submaster)
+				initSubmasterConfiguration();
+			else if(elemIndex != -1)
 				initDevice();
 			else
 				initStageConfiguration();
@@ -135,6 +149,132 @@ public class ModeUI {
 		modeStage.setTitle("Control Panel");
 		modeStage.show();
 	}
+	private void initSubmasterConfiguration() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		GridPane buttons = new GridPane();
+		buttons.setHgap(GAP);
+		buttons.setVgap(GAP);
+		buttons.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblTitle = new Label("OpenDMXStudio Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		ListView<SubMaster> masters = new ListView<SubMaster>();
+		masters.getItems().addAll(dmxStudio.getMasters().getMasters());
+		root.add(masters, 0, 1);
+		
+		Button btnSave = new Button("Save Submasters");
+		buttons.add(btnSave, 0, 0);
+		
+		Button btnUp = new Button("Move Up");
+		buttons.add(btnUp, 0, 2);
+		
+		Button btnDown = new Button("Move Down");
+		buttons.add(btnDown, 1, 2);
+		
+		Label lblName = new Label("Name: ");
+		lblName.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblName, 0, 4);
+		
+		TextField txtName = new TextField();
+		buttons.add(txtName, 1, 4);
+		
+		Label lblType = new Label("Submaster Type: ");
+		lblType.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblType, 0, 6);
+		
+		ComboBox<SubMasterType> cbxMasters = new ComboBox<SubMasterType>();
+		cbxMasters.getItems().addAll(SubMasterType.MASTER,SubMasterType.SUBMASTER);
+		cbxMasters.getSelectionModel().clearAndSelect(1);
+		buttons.add(cbxMasters, 1, 6);
+		
+		Button btnAdd = new Button("Add");
+		buttons.add(btnAdd, 0, 7);
+		
+		Button btnRemove = new Button("Remove");
+		buttons.add(btnRemove, 1, 7);
+		
+		Button btnBack = new Button("Back");
+		buttons.add(btnBack, 0, 8);
+		
+		Label lblStatus = new Label();
+		buttons.add(lblStatus, 1, 8);
+		
+		root.add(buttons, 1, 1);
+		
+		btnBack.setOnAction(event -> {
+			submaster = false;
+			update();
+		});
+		
+		btnAdd.setOnAction(event -> {
+			String name = txtName.getText();
+			if(name.trim().equals(""))
+				name = "Untitled Submaster";
+			txtName.setText("");
+			int id = 0;
+			
+			for(SubMaster m : masters.getItems()) {
+				if(m.getId() > id)
+					id = m.getId();
+			}
+			id++;
+			
+			SubMaster e = new SubMaster(id, name, cbxMasters.getValue());
+			masters.getItems().add(e);
+			SubMasterSet set = dmxStudio.getMasters();
+			set.getMasters().clear();
+			set.getMasters().addAll(masters.getItems());
+			dmxStudio.setMasters(set);
+		});
+		btnRemove.setOnAction(event -> {
+			if(masters.getSelectionModel().isEmpty())
+				return;
+			masters.getItems().remove(masters.getSelectionModel().getSelectedIndex());
+		});
+		btnUp.setOnAction(event -> {
+			int index = masters.getSelectionModel().getSelectedIndex();
+			if(index == 0)
+				return;
+			SubMaster tmp = masters.getItems().get(index-1);
+			masters.getItems().set(index-1, masters.getItems().get(index));
+			masters.getItems().set(index, tmp);
+			masters.getSelectionModel().clearAndSelect(index-1);
+		});
+		btnDown.setOnAction(event -> {
+			int index = masters.getSelectionModel().getSelectedIndex();
+			if(index == masters.getItems().size()-1)
+				return;
+			SubMaster tmp = masters.getItems().get(index+1);
+			masters.getItems().set(index+1, masters.getItems().get(index));
+			masters.getItems().set(index, tmp);
+			masters.getSelectionModel().clearAndSelect(index+1);
+		});
+		btnSave.setOnAction(event -> {
+			// Save
+			SubMasterSet set = dmxStudio.getMasters();
+			set.getMasters().clear();
+			set.getMasters().addAll(masters.getItems());
+			dmxStudio.setMasters(set);
+			try {
+				SubMasterLoader.saveSubMasters(dmxStudio.getCurrentStage(), dmxStudio.getMasters());
+			} catch (Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error occured!");
+			}
+			lblStatus.setText("Successfully saved submasters!");
+		});
+		
+		Scene s = new Scene(root, 800, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Control Panel");
+		modeStage.show();
+	}
 	private void initStageConfiguration() {
 		GridPane root = new GridPane();
 		root.setHgap(GAP);
@@ -157,12 +297,20 @@ public class ModeUI {
 		Button btnSetBackground = new Button("Set Background");
 		root.add(btnSetBackground, 0, 4);
 		
+		Button btnConfigureSubmasters = new Button("Configure Submasters");
+		root.add(btnConfigureSubmasters, 0, 5);
+		
 		Button btnBack = new Button("Back");
 		root.add(btnBack, 0, 7);
 		
 		Label lblStatus = new Label();
 		lblStatus.setFont(Font.font(FONT_SMALL));
 		root.add(lblStatus, 0, 8);
+		
+		btnConfigureSubmasters.setOnAction(event -> {
+			submaster = true;
+			update();
+		});
 		
 		btnLoad.setOnAction(event -> {
 			DirectoryChooser dChooser = new DirectoryChooser();
@@ -212,8 +360,7 @@ public class ModeUI {
 			}
 		});
 		btnBack.setOnAction(event -> {
-			dmxStudio.setMode(InterfaceMode.DEFAULT);
-			update();
+			reset();
 		});
 		
 		Scene s = new Scene(root, 600, 400);
@@ -506,8 +653,7 @@ public class ModeUI {
 		root.add(buttons, 1, 1);
 		
 		btnBack.setOnAction(event -> {
-			dmxStudio.setMode(InterfaceMode.DEFAULT);
-			update();
+			reset();
 		});
 		
 		btnAdd.setOnAction(event -> {
@@ -592,6 +738,10 @@ public class ModeUI {
 			lblStatus.setText("Successfully loaded cues!");
 		});
 		btnSave.setOnAction(event -> {
+			CueSet set = dmxStudio.getCurrCue();
+			set.getCues().clear();
+			set.getCues().addAll(cues.getItems());
+			dmxStudio.setCurrCue(set);
 			// Save
 			FileChooser fChooser = new FileChooser();
 			fChooser.setTitle("Save Cue");
@@ -651,8 +801,7 @@ public class ModeUI {
 		root.add(buttons, 1, 1);
 		
 		btnBack.setOnAction(event -> {
-			dmxStudio.setMode(InterfaceMode.DEFAULT);
-			update();
+			reset();
 		});
 		btnGo.setOnAction(event -> {
 			try {
@@ -736,8 +885,25 @@ public class ModeUI {
 			root.add(lblStatus, 0, 5);
 			
 			Button btnBack = new Button("Back");
-			root.add(btnBack, 0, 6);
+			root.add(btnBack, 0, 4);
 			
+			int i = 0;
+			for(SubMaster m : dmxStudio.getMasters().getMasters()) {
+				Label lblName = new Label(m.getName());
+				lblName.setFont(Font.font(FONT_SMALL));
+				root.add(lblName, i, 6);
+				Slider sldMaster = new Slider(0,255,m.getValue());
+				sldMaster.setOrientation(Orientation.VERTICAL);
+				final int index = i;
+				sldMaster.valueProperty().addListener(new ChangeListener<Number>(){
+					@Override
+					public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+						dmxStudio.getMasters().getMasters().get(index).setValue((int)((double) newValue), dmxStudio);
+					}
+				});
+				root.add(sldMaster, i, 7);
+				i++;
+			}
 			btnApply.setOnAction(event -> {
 				if(!isInt(txtUniverse.getText()) || !isInt(txtChannel.getText())) {
 					lblStatus.setText("Expected number but got letter!");
@@ -757,7 +923,7 @@ public class ModeUI {
 				lblStatus.setText("Successfully applied changes!");
 			});
 			btnBack.setOnAction(event -> {
-				dmxStudio.setMode(InterfaceMode.DEFAULT);
+				reset();
 			});
 		}else {
 			StageElement elem = dmxStudio.getCurrentStage().getElements().get(elemIndex);
@@ -881,7 +1047,7 @@ public class ModeUI {
 			});
 		}
 		
-		Scene s = new Scene(root, 600, 400);
+		Scene s = new Scene(root, 600, 600);
 		modeStage.setScene(s);
 		modeStage.setTitle("Control Panel");
 		modeStage.show();
