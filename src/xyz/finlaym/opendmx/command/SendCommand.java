@@ -15,6 +15,9 @@ public class SendCommand extends Command {
 	public SendCommand(Channel c, OpenDMXStudio studio) {
 		this(c.getUniverse(), c.getChannel(), c.getCurrVal(studio));
 	}
+	public SendCommand(Channel c) {
+		this(c.getUniverse(), c.getChannel(), c.getCurrValRaw());
+	}
 	public int getUniverse() {
 		return universe;
 	}

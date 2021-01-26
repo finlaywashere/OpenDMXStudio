@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.command.SendCommand;
 import xyz.finlaym.opendmx.driver.HardwareInterface;
 import xyz.finlaym.opendmx.stage.Channel;
@@ -26,7 +25,7 @@ public class CueContainer {
 		return entries;
 	}
 	
-	public void execute(HardwareInterface hw, OpenDMXStudio studio) throws IOException {
+	public void execute(HardwareInterface hw) throws IOException {
 		double maxTime = 0;
 		for(CueEntry e : entries) {
 			if(e.getTransitionTime() > maxTime)
@@ -48,12 +47,12 @@ public class CueContainer {
 						hw.sendCommand(cmd);
 					}else {
 						Channel c = e.getNewValue();
-						SendCommand cmd = new SendCommand(c,studio);
+						SendCommand cmd = new SendCommand(c);
 						hw.sendCommand(cmd);
 					}
 				}else {
 					Channel c = e.getNewValue();
-					SendCommand cmd = new SendCommand(c,studio);
+					SendCommand cmd = new SendCommand(c);
 					hw.sendCommand(cmd);
 				}
 			}
@@ -66,7 +65,7 @@ public class CueContainer {
 		}
 		for(CueEntry e : entries) {
 			Channel c = e.getNewValue();
-			SendCommand cmd = new SendCommand(c,studio);
+			SendCommand cmd = new SendCommand(c);
 			hw.sendCommand(cmd);
 		}
 	}

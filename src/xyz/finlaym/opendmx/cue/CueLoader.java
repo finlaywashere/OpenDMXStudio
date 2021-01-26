@@ -5,11 +5,10 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Scanner;
 
-import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.stage.StageContainer;
 
 public class CueLoader {
-	public static CueSet loadCue(StageContainer stage, File f, OpenDMXStudio studio) throws Exception{
+	public static CueSet loadCue(StageContainer stage, File f) throws Exception{
 		Scanner in = new Scanner(f);
 		CueSet set = new CueSet();
 		CueContainer currCue = null;
@@ -35,7 +34,7 @@ public class CueLoader {
 				i = 0;
 				currCue = new CueContainer(cName);
 			}else {
-				currCue.getEntries().add(CueEntry.fromString(s,studio));
+				currCue.getEntries().add(CueEntry.fromString(s));
 				i++;
 			}
 		}

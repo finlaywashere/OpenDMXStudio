@@ -202,6 +202,8 @@ public class ModeUI {
 			FileChooser fChooser = new FileChooser();
 			fChooser.setTitle("Open Background");
 			File background = fChooser.showOpenDialog(modeStage);
+			if(background == null)
+				return;
 			try {
 				dmxStudio.getCurrentStage().setBackground(new Image(new FileInputStream(background)));
 			} catch (Exception e) {
@@ -340,9 +342,11 @@ public class ModeUI {
 					newChannels[i] = elem.getChannels()[i];
 				}
 				int maxId = Integer.MIN_VALUE;
-				for(Channel c : elem.getChannels()) {
-					if(c.getId() > maxId)
-						maxId = c.getId();
+				for(StageElement e : dmxStudio.getCurrentStage().getElements()) {
+					for(Channel c : e.getChannels()) {
+						if(c.getId() > maxId)
+							maxId = c.getId();
+					}
 				}
 				if(maxId < 0)
 					maxId = 0;
@@ -523,19 +527,25 @@ public class ModeUI {
 							int id2 = entry.getNewValue().getId();
 							if(id == id2) {
 								// Found the old value of the channel
-								oldValue = entry.getNewValue().getCurrVal(dmxStudio);
+								oldValue = entry.getNewValue().getCurrValRaw();
 								break;
 							}
 						}
 					}
 					Channel c1 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId());
-					c1.setCurrVal(oldValue,dmxStudio);
-					CueEntry entry = new CueEntry(c, c1, cbxTypes.getSelectionModel().getSelectedItem(),sldTime.getValue(),dmxStudio);
+					c1.setCurrValRaw(oldValue);
+					Channel c2 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId());
+					c2.setCurrValRaw(c.getCurrValRaw());
+					CueEntry entry = new CueEntry(c2, c1, cbxTypes.getSelectionModel().getSelectedItem(),sldTime.getValue());
 					cue.getEntries().add(entry);
 				}
 			}
 			
 			cues.getItems().add(cue);
+			CueSet set = dmxStudio.getCurrCue();
+			set.getCues().clear();
+			set.getCues().addAll(cues.getItems());
+			dmxStudio.setCurrCue(set);
 		});
 		btnRemove.setOnAction(event -> {
 			if(cues.getSelectionModel().isEmpty())
@@ -568,8 +578,10 @@ public class ModeUI {
 				cueDir.mkdirs();
 			fChooser.setInitialDirectory(cueDir);
 			File f = fChooser.showOpenDialog(modeStage);
+			if(f == null)
+				return;
 			try {
-				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f,dmxStudio);
+				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f);
 				dmxStudio.setCurrCue(set);
 				cues.getItems().clear();
 				cues.getItems().addAll(set.getCues());
@@ -580,11 +592,7 @@ public class ModeUI {
 			lblStatus.setText("Successfully loaded cues!");
 		});
 		btnSave.setOnAction(event -> {
-			// Apply changes and save
-			CueSet set = dmxStudio.getCurrCue();
-			set.getCues().clear();
-			set.getCues().addAll(cues.getItems());
-			dmxStudio.setCurrCue(set);
+			// Save
 			FileChooser fChooser = new FileChooser();
 			fChooser.setTitle("Save Cue");
 			File cueDir = new File(dmxStudio.getCurrentStage().getStageDir(),"cues/");
@@ -592,8 +600,10 @@ public class ModeUI {
 				cueDir.mkdirs();
 			fChooser.setInitialDirectory(cueDir);
 			File f = fChooser.showSaveDialog(modeStage);
+			if(f == null)
+				return;
 			try {
-				CueLoader.saveCue(dmxStudio.getCurrentStage(),set,f);
+				CueLoader.saveCue(dmxStudio.getCurrentStage(),dmxStudio.getCurrCue(),f);
 			} catch (Exception e) {
 				e.printStackTrace();
 				lblStatus.setText("Error occured!");
@@ -646,7 +656,7 @@ public class ModeUI {
 		});
 		btnGo.setOnAction(event -> {
 			try {
-				boolean success = dmxStudio.getCurrCue().execute(dmxStudio.getHwInterface(),dmxStudio);
+				boolean success = dmxStudio.getCurrCue().execute(dmxStudio.getHwInterface());
 				if(!success) {
 					lblStatus.setText("Reached end of cues!");
 					return;
@@ -666,8 +676,10 @@ public class ModeUI {
 				cueDir.mkdirs();
 			fChooser.setInitialDirectory(cueDir);
 			File f = fChooser.showOpenDialog(modeStage);
+			if(f == null)
+				return;
 			try {
-				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f,dmxStudio);
+				CueSet set = CueLoader.loadCue(dmxStudio.getCurrentStage(), f);
 				dmxStudio.setCurrCue(set);
 				cues.getItems().clear();
 				cues.getItems().addAll(set.getCues());

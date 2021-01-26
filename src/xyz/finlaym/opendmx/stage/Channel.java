@@ -39,7 +39,9 @@ public class Channel {
 		this.currVal = currVal;
 		studio.getCRegistry().setChannel(this);
 	}
-	
+	public void setCurrValRaw(int currVal){
+		this.currVal = currVal;
+	}
 	public void setUniverse(int universe) {
 		this.universe = universe;
 	}
