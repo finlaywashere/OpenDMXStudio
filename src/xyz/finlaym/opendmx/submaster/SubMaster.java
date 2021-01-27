@@ -1,9 +1,11 @@
 package xyz.finlaym.opendmx.submaster;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import xyz.finlaym.opendmx.OpenDMXStudio;
+import xyz.finlaym.opendmx.command.SendCommand;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.StageElement;
 
@@ -34,10 +36,14 @@ public class SubMaster {
 	public int getValue() {
 		return value;
 	}
+	public void setName(String name) {
+		this.name = name;
+	}
 	/**
 	 * Sets the value of an entire sub master, searches for the channels/devices it wants so that they can be linked and change automatically
+	 * @throws IOException 
 	*/
-	public void setValue(int value, OpenDMXStudio studio) {
+	public void setValue(int value, OpenDMXStudio studio) throws IOException {
 		this.value = value;
 		List<Channel> triggers = new ArrayList<Channel>();
 		if(type == SubMasterType.MASTER) {
@@ -64,6 +70,8 @@ public class SubMaster {
 		}
 		for(Channel c : triggers) {
 			c.setCurrVal(value, studio);
+			SendCommand cmd = new SendCommand(c.getUniverse(),c.getChannel(),c.getCurrVal(studio));
+			studio.getHwInterface().sendCommand(cmd);
 		}
 	}
 	@Override

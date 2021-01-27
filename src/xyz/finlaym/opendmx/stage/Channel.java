@@ -53,9 +53,11 @@ public class Channel {
 	public void setType(ChannelType type) {
 		this.type = type;
 	}
-
 	@Override
 	public String toString() {
+		return "Universe: "+universe+" Channel: "+channel;
+	}
+	public String encode() {
 		return universe+","+channel+","+type.toString()+","+id;
 	}
 	public static Channel fromString(String s) {

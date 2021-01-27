@@ -44,13 +44,14 @@ public class OpenDMXStudio extends Application{
 		// We starting bois
 		SerialPort comPort = SerialPort.getCommPort("/dev/ttyUSB1");
 		comPort.setBaudRate(115200);
+		comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 1000, 1000);
 		comPort.openPort();
 		
 		// Now we have an open port
 		hwInterface = new HardwareInterface(comPort);
 		
 		currentStage = StageLoader.loadStage(new File("test_stage/"));
-		masters = SubMasterLoader.loadSubMasters(currentStage);
+		masters = SubMasterLoader.loadSubMasters(currentStage,this);
 		
 		// JavaFX stuff now
 		Group root = new Group();

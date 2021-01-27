@@ -68,9 +68,12 @@ public class StageElement {
 	}
 	@Override
 	public String toString() {
+		return name;
+	}
+	public String encode() {
 		String channelS = ""+channels.length;
 		for(Channel c : channels) {
-			channelS += ","+c.toString();
+			channelS += ","+c.encode();
 		}
 		return x+":"+y+":"+type.toString()+":"+name+":"+channelS+":"+radius+":"+(int)(color.getRed()*255)+","+(int)(color.getGreen()*255)+","+(int)(color.getBlue()*255)+":"+id;
 	}

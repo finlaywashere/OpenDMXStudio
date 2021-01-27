@@ -16,6 +16,7 @@ public class HardwareInterface {
 		return serial;
 	}
 	public void sendCommand(Command c) throws IOException {
+		System.out.println("dmx_send");
 		byte[] data = c.encode();
 		if(!serial.isOpen()) {
 			System.err.println("Error: Port is not open!");

@@ -68,7 +68,7 @@ public class StageLoader {
 		PrintWriter out = new PrintWriter(new FileWriter(stageData,true));
 		out.println(Constants.CONFIG_VERSION);
 		for(StageElement elem : stage.getElements()) {
-			out.println(elem.toString());
+			out.println(elem.encode());
 		}
 		out.close();
 	}

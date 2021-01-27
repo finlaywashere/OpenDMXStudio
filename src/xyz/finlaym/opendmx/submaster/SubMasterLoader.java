@@ -5,10 +5,11 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Scanner;
 
+import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.stage.StageContainer;
 
 public class SubMasterLoader {
-	public static SubMasterSet loadSubMasters(StageContainer stage) throws Exception{
+	public static SubMasterSet loadSubMasters(StageContainer stage, OpenDMXStudio dmx) throws Exception{
 		File f = new File(stage.getStageDir(), "masters.sub");
 		if(!f.exists()) {
 			System.err.println("Submaster file not found, skipping!");
@@ -41,7 +42,7 @@ public class SubMasterLoader {
 				i = 0;
 				currMaster = new SubMaster(id, name, type);
 			}else {
-				currMaster.getChannels().add(SubMasterEntry.fromString(s));
+				currMaster.getChannels().add(SubMasterEntry.fromString(s,dmx));
 				i++;
 			}
 		}
@@ -59,7 +60,7 @@ public class SubMasterLoader {
 		for(SubMaster m : master.getMasters()) {
 			out.println(m.getChannels().size()+":"+m.getType()+":"+m.getId()+":"+m.getName());
 			for(SubMasterEntry i : m.getChannels()) {
-				out.println(i.toString());
+				out.println(i.encode());
 			}
 		}
 		out.println("EOF");

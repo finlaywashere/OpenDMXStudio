@@ -34,6 +34,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.InterfaceMode;
 import xyz.finlaym.opendmx.OpenDMXStudio;
+import xyz.finlaym.opendmx.Utils;
 import xyz.finlaym.opendmx.command.SendCommand;
 import xyz.finlaym.opendmx.cue.CueContainer;
 import xyz.finlaym.opendmx.cue.CueEntry;
@@ -47,6 +48,8 @@ import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageElementType;
 import xyz.finlaym.opendmx.stage.StageLoader;
 import xyz.finlaym.opendmx.submaster.SubMaster;
+import xyz.finlaym.opendmx.submaster.SubMasterEntry;
+import xyz.finlaym.opendmx.submaster.SubMasterEntryType;
 import xyz.finlaym.opendmx.submaster.SubMasterLoader;
 import xyz.finlaym.opendmx.submaster.SubMasterSet;
 import xyz.finlaym.opendmx.submaster.SubMasterType;
@@ -87,8 +90,10 @@ public class ModeUI {
 			initDefault();
 			break;
 		case DEVICE:
-			if(submaster)
+			if(submaster && elemIndex == -1)
 				initSubmasterConfiguration();
+			else if(submaster)
+				initSubmasterEdit();
 			else if(elemIndex != -1)
 				initDevice();
 			else
@@ -144,7 +149,128 @@ public class ModeUI {
 		});
 		root.add(btnRecordCue, 0, 4, 2, 1);
 		
+		Button btnExit = new Button("Exit");
+		btnExit.setOnAction(event -> {
+			System.exit(0);
+		});
+		root.add(btnExit, 0, 6, 2, 1);
+		
 		Scene s = new Scene(root, 600, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Control Panel");
+		modeStage.show();
+	}
+	private void initSubmasterEdit() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		SubMaster master = dmxStudio.getMasters().getMasters().get(elemIndex);
+		
+		Label lblTitle = new Label("OpenDMXStudio Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		GridPane buttons = new GridPane();
+		buttons.setHgap(GAP);
+		buttons.setVgap(GAP);
+		buttons.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblName = new Label("Name: ");
+		lblName.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblName, 0, 1);
+		
+		TextField txtName = new TextField(master.getName());
+		buttons.add(txtName, 1, 1);
+		
+		ListView<SubMasterEntry> entries = new ListView<SubMasterEntry>();
+		entries.getItems().addAll(master.getChannels());
+		root.add(entries, 0, 1);
+		
+		Label lblFixture = new Label("Fixture: ");
+		lblFixture.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblFixture, 0, 3);
+		
+		ComboBox<StageElement> elements = new ComboBox<StageElement>();
+		elements.getItems().addAll(dmxStudio.getCurrentStage().getElements());
+		buttons.add(elements, 1, 3);
+		
+		Label lblChannel = new Label("Channel: ");
+		lblChannel.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblChannel, 0, 4);
+		
+		ComboBox<Channel> channels = new ComboBox<Channel>();
+		buttons.add(channels, 1, 4);
+		channels.setDisable(true);
+		
+		Label lblStatus = new Label();
+		lblStatus.setFont(Font.font(FONT_SMALL));
+		buttons.add(lblStatus, 0, 6);
+		
+		Button btnAdd = new Button("Add");
+		buttons.add(btnAdd, 0, 5);
+		
+		Button btnRem = new Button("Remove");
+		buttons.add(btnRem, 1, 5);
+		
+		Button btnBack = new Button("Back");
+		buttons.add(btnBack, 0, 6);
+		
+		txtName.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
+				master.setName(newValue);
+				dmxStudio.getMasters().getMasters().set(elemIndex, master);
+			}
+		});
+		btnRem.setOnAction(event -> {
+			if(entries.getSelectionModel().isEmpty())
+				return;
+			int index = entries.getSelectionModel().getSelectedIndex();
+			entries.getItems().remove(index);
+			master.getChannels().remove(index);
+			dmxStudio.getMasters().getMasters().set(elemIndex, master);
+		});
+		btnAdd.setOnAction(event -> {
+			SubMasterEntry entry = null;
+			if(channels.getSelectionModel().isEmpty()) {
+				// Only fixture is selected
+				if(elements.getSelectionModel().isEmpty()) {
+					entry = null;
+				}else {
+					entry = new SubMasterEntry(SubMasterEntryType.DEVICE, elements.getValue().getId(),dmxStudio);
+				}
+			}else {
+				// Fixture and channel are selected
+				entry = new SubMasterEntry(SubMasterEntryType.CHANNEL, channels.getValue().getId(),dmxStudio);
+			}
+			if(entry == null) {
+				lblStatus.setText("Fixture and or channel must be selected");
+				return;
+			}
+			master.getChannels().add(entry);
+			dmxStudio.getMasters().getMasters().set(elemIndex, master);
+			entries.getItems().add(entry);
+		});
+		
+		elements.valueProperty().addListener(new ChangeListener<StageElement>() {
+			@Override
+			public void changed(ObservableValue<? extends StageElement> arg0, StageElement oldValue, StageElement newValue) {
+				channels.getItems().clear();
+				channels.getItems().addAll(newValue.getChannels());
+				channels.setDisable(false);
+			}
+		});
+		
+		btnBack.setOnAction(event -> {
+			elemIndex = -1;
+			update();
+		});
+		
+		root.add(buttons, 1, 1);
+		
+		Scene s = new Scene(root, 800, 400);
 		modeStage.setScene(s);
 		modeStage.setTitle("Control Panel");
 		modeStage.show();
@@ -169,7 +295,10 @@ public class ModeUI {
 		root.add(masters, 0, 1);
 		
 		Button btnSave = new Button("Save Submasters");
-		buttons.add(btnSave, 0, 0);
+		buttons.add(btnSave, 1, 0);
+		
+		Button btnEdit = new Button("Edit Selected Submaster");
+		buttons.add(btnEdit, 0, 0);
 		
 		Button btnUp = new Button("Move Up");
 		buttons.add(btnUp, 0, 2);
@@ -211,7 +340,13 @@ public class ModeUI {
 			submaster = false;
 			update();
 		});
-		
+		btnEdit.setOnAction(event -> {
+			if(masters.getSelectionModel().isEmpty())
+				return;
+			int index = masters.getSelectionModel().getSelectedIndex();
+			elemIndex = index;
+			update();
+		});
 		btnAdd.setOnAction(event -> {
 			String name = txtName.getText();
 			if(name.trim().equals(""))
@@ -542,7 +677,7 @@ public class ModeUI {
 			int index = cbxChannels.getSelectionModel().getSelectedIndex()-1;
 			
 			if(wrapper.getChannel() != null) {
-				if(!isInt(txtUniverse.getText()) || !isInt(txtChannelNum.getText())) {
+				if(!Utils.isInt(txtUniverse.getText()) || !Utils.isInt(txtChannelNum.getText())) {
 					lblStatus.setText("Expected number but got letter!");
 					return;
 				}
@@ -887,25 +1022,36 @@ public class ModeUI {
 			Button btnBack = new Button("Back");
 			root.add(btnBack, 0, 4);
 			
+			GridPane sliders = new GridPane();
+			sliders.setHgap(GAP);
+			sliders.setVgap(GAP);
+			sliders.setPadding(new Insets(GAP,GAP,GAP,GAP));
+			
 			int i = 0;
 			for(SubMaster m : dmxStudio.getMasters().getMasters()) {
 				Label lblName = new Label(m.getName());
 				lblName.setFont(Font.font(FONT_SMALL));
-				root.add(lblName, i, 6);
+				sliders.add(lblName, i, 0);
 				Slider sldMaster = new Slider(0,255,m.getValue());
 				sldMaster.setOrientation(Orientation.VERTICAL);
 				final int index = i;
 				sldMaster.valueProperty().addListener(new ChangeListener<Number>(){
 					@Override
 					public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-						dmxStudio.getMasters().getMasters().get(index).setValue((int)((double) newValue), dmxStudio);
+						try {
+							dmxStudio.getMasters().getMasters().get(index).setValue((int)((double) newValue), dmxStudio);
+						} catch (IOException e) {
+							e.printStackTrace();
+							lblStatus.setText("Error setting channel!");
+						}
 					}
 				});
-				root.add(sldMaster, i, 7);
+				sliders.add(sldMaster, i, 1);
 				i++;
 			}
+			root.add(sliders, 0, 6);
 			btnApply.setOnAction(event -> {
-				if(!isInt(txtUniverse.getText()) || !isInt(txtChannel.getText())) {
+				if(!Utils.isInt(txtUniverse.getText()) || !Utils.isInt(txtChannel.getText())) {
 					lblStatus.setText("Expected number but got letter!");
 					return;
 				}
@@ -1051,14 +1197,5 @@ public class ModeUI {
 		modeStage.setScene(s);
 		modeStage.setTitle("Control Panel");
 		modeStage.show();
-	}
-	@SuppressWarnings("unused")
-	private static boolean isInt(String s) {
-		try {
-			int i = Integer.valueOf(s);
-			return true;
-		}catch(NumberFormatException e) {
-			return false;
-		}
 	}
 }
