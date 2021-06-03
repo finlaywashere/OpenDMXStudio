@@ -35,8 +35,11 @@ public class HardwareInterface {
 			System.err.println("Error: Port is not open!");
 			return;
 		}
-		serial.getOutputStream().write(data);
-		serial.getOutputStream().flush();
-		serial.getInputStream().read();
+		serial.writeBytes(data, data.length);
+		byte[] result = new byte[4];
+		serial.readBytes(result, result.length);
+		for(byte b : result) {
+			System.out.println("Data: "+Byte.toString(b));
+		}
 	}
 }
