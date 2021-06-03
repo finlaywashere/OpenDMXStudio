@@ -16,14 +16,16 @@ package xyz.finlaym.opendmx.command;
 
 public abstract class Command {
 	
-	protected int commandCode;
-	public Command(int commandCode) {
+	protected byte commandCode;
+	public Command(byte commandCode) {
 		this.commandCode = commandCode;
 	}
 	
-	public int getCommandCode() {
+	public byte getCommandCode() {
 		return commandCode;
 	}
 
 	public abstract byte[] encode();
+	public abstract int responseLength();
+	public abstract boolean handleResponse(byte[] response);
 }

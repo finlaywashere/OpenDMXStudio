@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import xyz.finlaym.opendmx.driver.HardwareInterface;
+import xyz.finlaym.opendmx.driver.ControllerHardware;
 
 public class CueSet {
 	private List<CueContainer> cues;
@@ -30,7 +30,7 @@ public class CueSet {
 	public List<CueContainer> getCues() {
 		return cues;
 	}
-	public boolean execute(HardwareInterface hw) throws IOException{
+	public boolean execute(ControllerHardware hw) throws IOException{
 		if(curr >= cues.size())
 			return false;
 		cues.get(curr).execute(hw);

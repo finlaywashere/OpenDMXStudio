@@ -21,7 +21,7 @@ public class SendCommand extends Command {
 
 	private int universe,value, channel;
 	public SendCommand(int universe, int channel, int value) {
-		super(1);
+		super((byte) 1);
 		this.universe = universe;
 		this.channel = channel;
 		this.value = value;
@@ -54,7 +54,16 @@ public class SendCommand extends Command {
 	public byte[] encode() {
 		// Send has data format
 		// command code, universe #, value low, value high
-		return new byte[] {(byte) commandCode, (byte) universe, (byte) channel, (byte) (channel >> 8), (byte) value};
+		return new byte[] {commandCode, (byte) universe, (byte) channel, (byte) (channel >> 8), (byte) value};
+	}
+	@Override
+	public int responseLength() {
+		return 1;
+	}
+	@Override
+	public boolean handleResponse(byte[] response) {
+		if(response[0] != commandCode) return false;
+		return true;
 	}
 
 }

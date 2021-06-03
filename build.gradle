@@ -13,21 +13,23 @@
 */
 
 plugins {
-	// Apply the application plugin to add support for building a CLI application in Java.
 	id 'application'
+	id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 repositories {
-	// Use JCenter for resolving dependencies.
-	jcenter()
+	mavenCentral()
 }
-
+javafx {
+    version = '12'
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing' ]
+    configuration = 'compileOnly'
+}
 dependencies {
 	implementation 'com.fazecast:jSerialComm:[2.0.0,3.0.0)'
 }
 
 application {
-	// Define the main class for the application.
 	mainClass = 'xyz.finlaym.opendmx.OpenDMXStudio'
 }
 sourceSets {
@@ -49,4 +51,3 @@ jar {
       )
     }
 }
-

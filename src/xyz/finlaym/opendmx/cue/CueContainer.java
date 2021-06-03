@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import xyz.finlaym.opendmx.command.SendCommand;
-import xyz.finlaym.opendmx.driver.HardwareInterface;
+import xyz.finlaym.opendmx.driver.ControllerHardware;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.ChannelType;
 
@@ -39,7 +39,7 @@ public class CueContainer {
 		return entries;
 	}
 	
-	public void execute(HardwareInterface hw) throws IOException {
+	public void execute(ControllerHardware hw) throws IOException {
 		double maxTime = 0;
 		for(CueEntry e : entries) {
 			if(e.getTransitionTime() > maxTime)

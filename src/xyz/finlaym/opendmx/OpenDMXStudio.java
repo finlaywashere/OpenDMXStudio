@@ -27,7 +27,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.cue.CueSet;
-import xyz.finlaym.opendmx.driver.HardwareInterface;
+import xyz.finlaym.opendmx.driver.ControllerHardware;
+import xyz.finlaym.opendmx.driver.HardwareStatus;
 import xyz.finlaym.opendmx.stage.ChannelRegistry;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
@@ -42,7 +43,7 @@ public class OpenDMXStudio extends Application{
 		launch(args);
 	}
 	
-	private HardwareInterface hwInterface;
+	private ControllerHardware hardware;
 	private Canvas canvas;
 	private StageContainer currentStage;
 	private ModeUI modeUI;
@@ -62,7 +63,7 @@ public class OpenDMXStudio extends Application{
 		comPort.openPort();
 		
 		// Now we have an open port
-		hwInterface = new HardwareInterface(comPort);
+		hardware = new ControllerHardware(comPort, HardwareStatus.UNKNOWN);
 		
 		currentStage = StageLoader.loadStage(new File("test_stage/"));
 		masters = SubMasterLoader.loadSubMasters(currentStage,this);
@@ -182,9 +183,10 @@ public class OpenDMXStudio extends Application{
 		
 		timer.start();
 	}
-	public HardwareInterface getHwInterface() {
-		return hwInterface;
+	public ControllerHardware getHardware() {
+		return hardware;
 	}
+
 	public InterfaceMode getMode() {
 		return mode;
 	}

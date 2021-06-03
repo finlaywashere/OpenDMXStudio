@@ -954,7 +954,7 @@ public class ModeUI {
 		});
 		btnGo.setOnAction(event -> {
 			try {
-				boolean success = dmxStudio.getCurrCue().execute(dmxStudio.getHwInterface());
+				boolean success = dmxStudio.getCurrCue().execute(dmxStudio.getHardware());
 				if(!success) {
 					lblStatus.setText("Reached end of cues!");
 					return;
@@ -1074,7 +1074,7 @@ public class ModeUI {
 				int value = (int) sldValue.getValue();
 				SendCommand cmd = new SendCommand(universe, channel, value);
 				try {
-					dmxStudio.getHwInterface().sendCommand(cmd);
+					dmxStudio.getHardware().sendCommand(cmd);
 				} catch (IOException e) {
 					e.printStackTrace();
 					lblStatus.setText("Error occured!");
@@ -1168,7 +1168,7 @@ public class ModeUI {
 						chn.setCurrVal(value,dmxStudio);
 						SendCommand cmd = new SendCommand(chn.getUniverse(), chn.getChannel(), value);
 						try {
-							dmxStudio.getHwInterface().sendCommand(cmd);
+							dmxStudio.getHardware().sendCommand(cmd);
 						} catch (IOException e) {
 							e.printStackTrace();
 							lblStatus.setText("Error occured!");
@@ -1194,7 +1194,7 @@ public class ModeUI {
 					c.setCurrVal(value,dmxStudio);
 					SendCommand cmd = new SendCommand(c.getUniverse(), c.getChannel(), value);
 					try {
-						dmxStudio.getHwInterface().sendCommand(cmd);
+						dmxStudio.getHardware().sendCommand(cmd);
 					} catch (IOException e) {
 						e.printStackTrace();
 						lblStatus.setText("Error occured!");
