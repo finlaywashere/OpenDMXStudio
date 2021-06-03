@@ -1,5 +1,7 @@
 package xyz.finlaym.opendmx.command;
 
+import xyz.finlaym.opendmx.driver.ControllerHardware;
+
 public class ResetCommand extends Command{
 
 	public ResetCommand() {
@@ -17,7 +19,7 @@ public class ResetCommand extends Command{
 	}
 
 	@Override
-	public boolean handleResponse(byte[] response) {
+	public boolean handleResponse(byte[] response, ControllerHardware hardware) {
 		if(response[0] != commandCode) return false;
 		return true;
 	}

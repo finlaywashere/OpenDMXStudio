@@ -14,6 +14,8 @@
 
 package xyz.finlaym.opendmx.command;
 
+import xyz.finlaym.opendmx.driver.ControllerHardware;
+
 public abstract class Command {
 	
 	protected byte commandCode;
@@ -27,5 +29,5 @@ public abstract class Command {
 
 	public abstract byte[] encode();
 	public abstract int responseLength();
-	public abstract boolean handleResponse(byte[] response);
+	public abstract boolean handleResponse(byte[] response, ControllerHardware hardware);
 }

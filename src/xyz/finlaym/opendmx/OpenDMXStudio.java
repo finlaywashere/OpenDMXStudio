@@ -16,8 +16,6 @@ package xyz.finlaym.opendmx;
 
 import java.io.File;
 
-import com.fazecast.jSerialComm.SerialPort;
-
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -28,7 +26,8 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.cue.CueSet;
 import xyz.finlaym.opendmx.driver.ControllerHardware;
-import xyz.finlaym.opendmx.driver.HardwareStatus;
+import xyz.finlaym.opendmx.driver.HardwareProbe;
+import xyz.finlaym.opendmx.driver.SerialDevice;
 import xyz.finlaym.opendmx.stage.ChannelRegistry;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
@@ -43,7 +42,7 @@ public class OpenDMXStudio extends Application{
 		launch(args);
 	}
 	
-	private ControllerHardware hardware;
+	private ControllerHardware hardware = null;
 	private Canvas canvas;
 	private StageContainer currentStage;
 	private ModeUI modeUI;
@@ -56,14 +55,14 @@ public class OpenDMXStudio extends Application{
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		// We starting bois
-		SerialPort comPort = SerialPort.getCommPort("/dev/ttyACM0");
-		comPort.setBaudRate(115200);
-		comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 1000, 1000);
-		comPort.openPort();
-		
-		// Now we have an open port
-		hardware = new ControllerHardware(comPort, HardwareStatus.UNKNOWN);
+		// Get devices list from the hardware prober
+		SerialDevice[] devices = HardwareProbe.findDevices();
+		for(SerialDevice d : devices) {
+			if(d instanceof ControllerHardware) {
+				// Find first controller
+				hardware = (ControllerHardware) d;
+			}
+		}
 		
 		currentStage = StageLoader.loadStage(new File("test_stage/"));
 		masters = SubMasterLoader.loadSubMasters(currentStage,this);

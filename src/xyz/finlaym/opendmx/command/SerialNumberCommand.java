@@ -1,5 +1,7 @@
 package xyz.finlaym.opendmx.command;
 
+import xyz.finlaym.opendmx.driver.ControllerHardware;
+
 public class SerialNumberCommand extends Command {
 
 	public SerialNumberCommand() {
@@ -18,9 +20,13 @@ public class SerialNumberCommand extends Command {
 	}
 
 	@Override
-	public boolean handleResponse(byte[] response) {
+	public boolean handleResponse(byte[] response, ControllerHardware hardware) {
 		if(response[0] != commandCode) return false;
-		
+		byte[] sn = new byte[10];
+		for(int i = 1; i < response.length; i++) {
+			sn[i-1] = response[i];
+		}
+		hardware.setSerialNumber(sn);
 		return true;
 	}
 }

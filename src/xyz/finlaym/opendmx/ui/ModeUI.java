@@ -959,6 +959,9 @@ public class ModeUI {
 					lblStatus.setText("Reached end of cues!");
 					return;
 				}
+			} catch(NullPointerException e) {
+				lblStatus.setText("No device selected!");
+				return;
 			} catch (IOException e) {
 				e.printStackTrace();
 				lblStatus.setText("Error occured!");
@@ -1075,6 +1078,9 @@ public class ModeUI {
 				SendCommand cmd = new SendCommand(universe, channel, value);
 				try {
 					dmxStudio.getHardware().sendCommand(cmd);
+				} catch(NullPointerException e) {
+					lblStatus.setText("No device selected!");
+					return;
 				} catch (IOException e) {
 					e.printStackTrace();
 					lblStatus.setText("Error occured!");
@@ -1169,6 +1175,9 @@ public class ModeUI {
 						SendCommand cmd = new SendCommand(chn.getUniverse(), chn.getChannel(), value);
 						try {
 							dmxStudio.getHardware().sendCommand(cmd);
+						} catch(NullPointerException e) {
+							lblStatus.setText("No device selected!");
+							return;
 						} catch (IOException e) {
 							e.printStackTrace();
 							lblStatus.setText("Error occured!");
@@ -1195,6 +1204,9 @@ public class ModeUI {
 					SendCommand cmd = new SendCommand(c.getUniverse(), c.getChannel(), value);
 					try {
 						dmxStudio.getHardware().sendCommand(cmd);
+					} catch(NullPointerException e) {
+						lblStatus.setText("No device selected!");
+						return;
 					} catch (IOException e) {
 						e.printStackTrace();
 						lblStatus.setText("Error occured!");

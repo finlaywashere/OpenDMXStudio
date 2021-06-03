@@ -15,6 +15,7 @@
 package xyz.finlaym.opendmx.command;
 
 import xyz.finlaym.opendmx.OpenDMXStudio;
+import xyz.finlaym.opendmx.driver.ControllerHardware;
 import xyz.finlaym.opendmx.stage.Channel;
 
 public class SendCommand extends Command {
@@ -61,7 +62,7 @@ public class SendCommand extends Command {
 		return 1;
 	}
 	@Override
-	public boolean handleResponse(byte[] response) {
+	public boolean handleResponse(byte[] response, ControllerHardware hardware) {
 		if(response[0] != commandCode) return false;
 		return true;
 	}
