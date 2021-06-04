@@ -10,7 +10,7 @@ public class SerialNumberCommand extends Command {
 
 	@Override
 	public byte[] encode() {
-		return null;
+		return new byte[] {commandCode};
 	}
 
 	@Override

@@ -32,7 +32,10 @@ import xyz.finlaym.opendmx.Utils;
 
 public class StageLoader {
 	public static StageContainer loadStage(File stageDir) throws Exception{
-		Image stageImg = new Image(new FileInputStream(new File(stageDir,"background.jpg")));
+		File background = new File(stageDir,"background.jpg");
+		Image stageImg = null;
+		if(background.exists())
+			stageImg = new Image(new FileInputStream(background));
 		File dataFile = new File(stageDir,"stage.data");
 		ArrayList<StageElement> elements = new ArrayList<StageElement>();
 		Scanner in = new Scanner(dataFile);
@@ -73,8 +76,10 @@ public class StageLoader {
 		Utils.deleteDirectory(stageDir);
 		stageDir.mkdirs();
 		
-		BufferedImage img = SwingFXUtils.fromFXImage(stage.getBackground(), null);
-		ImageIO.write(img, "JPG", new File(stageDir,"background.jpg"));
+		if(stage.getBackground() != null) {
+			BufferedImage img = SwingFXUtils.fromFXImage(stage.getBackground(), null);
+			ImageIO.write(img, "JPG", new File(stageDir,"background.jpg"));
+		}
 		
 		File stageData = new File(stageDir,"stage.data");
 		stageData.createNewFile();

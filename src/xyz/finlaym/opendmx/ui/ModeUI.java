@@ -122,6 +122,12 @@ public class ModeUI {
 		case REPLAY:
 			initReplay();
 			break;
+		case HARDWARE:
+			initHardware();
+			break;
+		case STAGEOPTIONS:
+			initStageOptions();
+			break;
 		}
 	}
 	private void initDefault() {
@@ -163,15 +169,107 @@ public class ModeUI {
 		});
 		root.add(btnRecordCue, 0, 4, 2, 1);
 		
+		Button btnStageMenu = new Button("Stage Options");
+		btnStageMenu.setFont(Font.font(FONT_SMALL));
+		btnStageMenu.setOnAction(event -> {
+			dmxStudio.setMode(InterfaceMode.STAGEOPTIONS);
+		});
+		root.add(btnStageMenu, 1, 1, 2, 1);
+		
+		
 		Button btnExit = new Button("Exit");
 		btnExit.setOnAction(event -> {
 			System.exit(0);
 		});
 		root.add(btnExit, 0, 6, 2, 1);
 		
+		if(dmxStudio.getCurrentStage() == null) {
+			btnConfigure.setDisable(true);
+			btnManual.setDisable(true);
+			btnReplayCue.setDisable(true);
+			btnRecordCue.setDisable(true);
+		}
+		
 		Scene s = new Scene(root, 600, 400);
 		modeStage.setScene(s);
 		modeStage.setTitle("Control Panel");
+		modeStage.show();
+	}
+	private void initStageOptions() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblTitle = new Label("OpenDMXStudio Stage Options");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		Button btnLoad = new Button("Load Stage");
+		btnLoad.setFont(Font.font(FONT_SMALL));
+		root.add(btnLoad, 0, 1);
+		
+		Button btnNew = new Button("Create Stage");
+		btnNew.setFont(Font.font(FONT_SMALL));
+		root.add(btnNew, 0, 2);
+		
+		Button btnBack = new Button("Back");
+		btnBack.setFont(Font.font(FONT_SMALL));
+		btnBack.setOnAction(event -> {
+			reset();
+		});
+		
+		root.add(btnBack, 0, 4);
+		
+		Label lblStatus = new Label();
+		lblStatus.setFont(Font.font(FONT_SMALL));
+		root.add(lblStatus, 0, 5);
+		
+		btnLoad.setOnAction(event -> {
+			DirectoryChooser chooser = new DirectoryChooser();
+			chooser.setTitle("Load Stage");
+			File dir = chooser.showDialog(modeStage);
+			try {
+				dmxStudio.loadStage(dir);
+				lblStatus.setText("Successfully loaded stage!");
+			} catch (Exception e) {
+				lblStatus.setText("Error loading stage!");
+				e.printStackTrace();
+			}
+		});
+		btnNew.setOnAction(event -> {
+			DirectoryChooser chooser = new DirectoryChooser();
+			chooser.setTitle("Create Stage");
+			File dir = chooser.showDialog(modeStage);
+			try {
+				StageContainer container = new StageContainer(new ArrayList<StageElement>(), null, dir);
+				dmxStudio.setCurrentStage(container);
+				StageLoader.saveStage(dir, container);
+				lblStatus.setText("Successfully created stage!");
+			} catch (Exception e) {
+				lblStatus.setText("Error created stage!");
+				e.printStackTrace();
+			}
+		});
+		
+		Scene s = new Scene(root, 800, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Stage Options");
+		modeStage.show();
+	}
+	private void initHardware() {
+		GridPane root = new GridPane();
+		root.setHgap(GAP);
+		root.setVgap(GAP);
+		root.setPadding(new Insets(GAP,GAP,GAP,GAP));
+		
+		Label lblTitle = new Label("OpenDMXStudio Hardware Control Panel");
+		lblTitle.setFont(Font.font(FONT_MEDIUM));
+		root.add(lblTitle, 0, 0);
+		
+		Scene s = new Scene(root, 800, 400);
+		modeStage.setScene(s);
+		modeStage.setTitle("Hardware Options");
 		modeStage.show();
 	}
 	private void initSubmasterEdit() {

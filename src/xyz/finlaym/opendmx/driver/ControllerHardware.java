@@ -54,6 +54,16 @@ public class ControllerHardware extends SerialDevice{
 	public void setNumUniverses(int numUniverses) {
 		this.numUniverses = numUniverses;
 	}
+	public String getSeralNumberString() {
+		String sn = "";
+		int middle = serialNumber.length/2-1;
+		for(int i = 0; i < serialNumber.length; i++) {
+			sn += Integer.toHexString(serialNumber[i]);
+			if(i == middle)
+				sn += "-";
+		}
+		return sn;
+	}
 	public boolean sendCommand(Command c) throws IOException {
 		byte[] data = c.encode();
 		if(!serialPort.isOpen()) {

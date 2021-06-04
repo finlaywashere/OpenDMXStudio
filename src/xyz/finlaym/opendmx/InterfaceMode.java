@@ -19,5 +19,7 @@ public enum InterfaceMode {
 	DEVICE,
 	MANUAL,
 	RECORD,
+	STAGEOPTIONS,
+	HARDWARE,
 	REPLAY;
 }

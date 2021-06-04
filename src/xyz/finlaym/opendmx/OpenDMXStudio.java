@@ -32,7 +32,6 @@ import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageLoader;
 import xyz.finlaym.opendmx.submaster.SubMasterLoader;
 import xyz.finlaym.opendmx.submaster.SubMasterSet;
-import xyz.finlaym.opendmx.ui.HardwareUI;
 import xyz.finlaym.opendmx.ui.ModeUI;
 
 public class OpenDMXStudio extends Application{
@@ -45,7 +44,6 @@ public class OpenDMXStudio extends Application{
 	private Canvas canvas;
 	private StageContainer currentStage;
 	private ModeUI modeUI;
-	private HardwareUI hardwareUI;
 	private InterfaceMode mode = InterfaceMode.DEFAULT;
 	private int selected = -1;
 	private boolean dragged = false;
@@ -56,9 +54,6 @@ public class OpenDMXStudio extends Application{
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		hwManager = new HardwareManager();
-		
-		currentStage = StageLoader.loadStage(new File("test_stage/"));
-		masters = SubMasterLoader.loadSubMasters(currentStage,this);
 		
 		// JavaFX stuff now
 		Group root = new Group();
@@ -82,6 +77,8 @@ public class OpenDMXStudio extends Application{
 			}
 		});
 		root.setOnMouseReleased(event -> {
+			if(currentStage == null)
+				return;
 			selected = -1;
 			if(dragged) {
 				dragged = false;
@@ -112,6 +109,8 @@ public class OpenDMXStudio extends Application{
 			}
 		});
 		root.setOnMouseDragged(event -> {
+			if(currentStage == null)
+				return;
 			dragged = true;
 			if(selected == -1)
 				return;
@@ -142,10 +141,17 @@ public class OpenDMXStudio extends Application{
 		AnimationTimer timer = new AnimationTimer() {
 			@Override
 			public void handle(long now) {
+				if(currentStage == null)
+					return;
 				GraphicsContext gc = canvas.getGraphicsContext2D();
 				int width = (int) canvas.getWidth();
 				int height = (int) canvas.getHeight();
-				gc.drawImage(currentStage.getBackground(), 0, 0, width, height);
+				if(currentStage.getBackground() != null) {
+					gc.drawImage(currentStage.getBackground(), 0, 0, width, height);
+				}else {
+					gc.setFill(Color.WHITE);
+					gc.fillRect(0, 0, width, height);
+				}
 				for(StageElement elem : currentStage.getElements()) {
 					int radius = elem.getRadius();
 					int x = (int) (elem.getX()*width);
@@ -172,9 +178,6 @@ public class OpenDMXStudio extends Application{
 		
 		modeUI = new ModeUI(this);
 		modeUI.start(primaryStage);
-		
-		hardwareUI = new HardwareUI(this);
-		hardwareUI.start(primaryStage);
 		
 		timer.start();
 	}
@@ -213,5 +216,9 @@ public class OpenDMXStudio extends Application{
 	}
 	public void setMasters(SubMasterSet masters) {
 		this.masters = masters;
+	}
+	public void loadStage(File stage) throws Exception{
+		currentStage = StageLoader.loadStage(stage);
+		masters = SubMasterLoader.loadSubMasters(currentStage,this);
 	}
 }

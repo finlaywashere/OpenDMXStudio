@@ -3,6 +3,7 @@ package xyz.finlaym.opendmx.driver;
 import com.fazecast.jSerialComm.SerialPort;
 
 import xyz.finlaym.opendmx.command.IdentifyCommand;
+import xyz.finlaym.opendmx.command.SerialNumberCommand;
 
 public class HardwareProbe {
 	public static SerialDevice[] findDevices() {
@@ -19,6 +20,13 @@ public class HardwareProbe {
 				boolean exists = hardware.sendCommand(c);
 				if(exists) {
 					hardware.setStatus(HardwareStatus.DISCONNECTED);
+					
+					SerialNumberCommand sn = new SerialNumberCommand();
+					boolean success = hardware.sendCommand(sn);
+					if(!success) {
+						System.err.println("Error probing hardware serial number!");
+					}
+					
 					devices[i] = hardware;
 				}else {
 					devices[i] = new SerialDevice(comPort);
