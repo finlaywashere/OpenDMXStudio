@@ -85,7 +85,7 @@ public class SubMaster {
 		for(Channel c : triggers) {
 			c.setCurrVal(value, studio);
 			SendCommand cmd = new SendCommand(c.getUniverse(),c.getChannel(),c.getCurrVal(studio));
-			studio.getHardware().sendCommand(cmd);
+			studio.getHardwareManager().sendCommand(cmd);
 		}
 	}
 	@Override

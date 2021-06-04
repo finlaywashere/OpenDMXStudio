@@ -51,3 +51,10 @@ jar {
       )
     }
 }
+task fatJar(type: Jar) {
+    classifier = 'lib'
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } } {
+		exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA', 'xyz/finlaym/opendmx'
+	}
+}
+build.dependsOn(fatJar)

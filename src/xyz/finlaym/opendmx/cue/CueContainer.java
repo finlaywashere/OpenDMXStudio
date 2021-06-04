@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import xyz.finlaym.opendmx.command.SendCommand;
-import xyz.finlaym.opendmx.driver.ControllerHardware;
+import xyz.finlaym.opendmx.driver.HardwareManager;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.ChannelType;
 
@@ -39,7 +39,7 @@ public class CueContainer {
 		return entries;
 	}
 	
-	public void execute(ControllerHardware hw) throws IOException {
+	public void execute(HardwareManager hardwareManager) throws IOException {
 		double maxTime = 0;
 		for(CueEntry e : entries) {
 			if(e.getTransitionTime() > maxTime)
@@ -58,16 +58,16 @@ public class CueContainer {
 						int newValue = e.getOldValue().getCurrValRaw() + (int) (timeElapsed * dps);
 						Channel c = e.getNewValue();
 						SendCommand cmd = new SendCommand(c.getUniverse(),c.getChannel(),newValue);
-						hw.sendCommand(cmd);
+						hardwareManager.sendCommand(cmd);
 					}else {
 						Channel c = e.getNewValue();
 						SendCommand cmd = new SendCommand(c);
-						hw.sendCommand(cmd);
+						hardwareManager.sendCommand(cmd);
 					}
 				}else {
 					Channel c = e.getNewValue();
 					SendCommand cmd = new SendCommand(c);
-					hw.sendCommand(cmd);
+					hardwareManager.sendCommand(cmd);
 				}
 			}
 			lastTime = System.currentTimeMillis();
@@ -80,7 +80,7 @@ public class CueContainer {
 		for(CueEntry e : entries) {
 			Channel c = e.getNewValue();
 			SendCommand cmd = new SendCommand(c);
-			hw.sendCommand(cmd);
+			hardwareManager.sendCommand(cmd);
 		}
 	}
 	@Override

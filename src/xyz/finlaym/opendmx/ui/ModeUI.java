@@ -954,7 +954,7 @@ public class ModeUI {
 		});
 		btnGo.setOnAction(event -> {
 			try {
-				boolean success = dmxStudio.getCurrCue().execute(dmxStudio.getHardware());
+				boolean success = dmxStudio.getCurrCue().execute(dmxStudio.getHardwareManager());
 				if(!success) {
 					lblStatus.setText("Reached end of cues!");
 					return;
@@ -1077,7 +1077,7 @@ public class ModeUI {
 				int value = (int) sldValue.getValue();
 				SendCommand cmd = new SendCommand(universe, channel, value);
 				try {
-					dmxStudio.getHardware().sendCommand(cmd);
+					dmxStudio.getHardwareManager().sendCommand(cmd);
 				} catch(NullPointerException e) {
 					lblStatus.setText("No device selected!");
 					return;
@@ -1174,7 +1174,7 @@ public class ModeUI {
 						chn.setCurrVal(value,dmxStudio);
 						SendCommand cmd = new SendCommand(chn.getUniverse(), chn.getChannel(), value);
 						try {
-							dmxStudio.getHardware().sendCommand(cmd);
+							dmxStudio.getHardwareManager().sendCommand(cmd);
 						} catch(NullPointerException e) {
 							lblStatus.setText("No device selected!");
 							return;
@@ -1203,7 +1203,7 @@ public class ModeUI {
 					c.setCurrVal(value,dmxStudio);
 					SendCommand cmd = new SendCommand(c.getUniverse(), c.getChannel(), value);
 					try {
-						dmxStudio.getHardware().sendCommand(cmd);
+						dmxStudio.getHardwareManager().sendCommand(cmd);
 					} catch(NullPointerException e) {
 						lblStatus.setText("No device selected!");
 						return;

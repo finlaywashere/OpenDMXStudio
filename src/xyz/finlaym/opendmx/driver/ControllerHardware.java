@@ -7,14 +7,12 @@ import com.fazecast.jSerialComm.SerialPort;
 import xyz.finlaym.opendmx.command.Command;
 
 public class ControllerHardware extends SerialDevice{
-	public static final int MAGIC = 0xBEEF;
-	
 	private byte[] serialNumber;
 	private HardwareStatus status;
 	private int softwareVersion;
 	private int hardwareVersion;
 	private int protocol;
-	
+	private int numUniverses;
 	
 	public ControllerHardware(SerialPort serialPort, HardwareStatus status) {
 		super(serialPort);
@@ -50,12 +48,19 @@ public class ControllerHardware extends SerialDevice{
 	public void setProtocol(int protocol) {
 		this.protocol = protocol;
 	}
+	public int getNumUniverses() {
+		return numUniverses;
+	}
+	public void setNumUniverses(int numUniverses) {
+		this.numUniverses = numUniverses;
+	}
 	public boolean sendCommand(Command c) throws IOException {
 		byte[] data = c.encode();
 		if(!serialPort.isOpen()) {
 			System.err.println("Error: Port is not open!");
 			return false;
 		}
+		
 		serialPort.writeBytes(data, data.length);
 		byte[] response = new byte[c.responseLength()];
 		serialPort.readBytes(response, response.length);

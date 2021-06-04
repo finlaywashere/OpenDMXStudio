@@ -12,6 +12,7 @@ public class HardwareProbe {
 			try {
 				SerialPort comPort = ports[i];
 				comPort.setBaudRate(115200);
+				comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 1000, 1000);
 				comPort.openPort();
 				ControllerHardware hardware = new ControllerHardware(comPort, HardwareStatus.UNKNOWN);
 				IdentifyCommand c = new IdentifyCommand();

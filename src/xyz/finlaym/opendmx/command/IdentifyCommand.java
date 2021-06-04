@@ -6,7 +6,6 @@ public class IdentifyCommand extends Command{
 
 	public IdentifyCommand() {
 		super((byte) 4);
-		
 	}
 
 	@Override
@@ -22,12 +21,15 @@ public class IdentifyCommand extends Command{
 	@Override
 	public boolean handleResponse(byte[] response, ControllerHardware hardware) {
 		if(response[0] != commandCode) return false;
-		int magic = (((int) response[1]) << 8) | response[2];
-		if(magic != ControllerHardware.MAGIC) return false;
-		hardware.setProtocol(response[3]);
-		int softwareVersion = (((int) response[4]) << 8) | response[5];
+		int magic = ((int) response[1]);
+		
+		if(magic != (byte) 0xff) return false;
+		
+		hardware.setProtocol(response[2]);
+		int softwareVersion = (((int) response[3]) << 8) | response[4];
 		hardware.setSoftwareVersion(softwareVersion);
-		hardware.setHardwareVersion(response[6]);
+		hardware.setHardwareVersion(response[5]);
+		hardware.setNumUniverses(response[6]);
 		return true;
 	}
 

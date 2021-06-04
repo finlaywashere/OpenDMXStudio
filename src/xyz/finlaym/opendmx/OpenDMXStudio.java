@@ -25,15 +25,14 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.cue.CueSet;
-import xyz.finlaym.opendmx.driver.ControllerHardware;
-import xyz.finlaym.opendmx.driver.HardwareProbe;
-import xyz.finlaym.opendmx.driver.SerialDevice;
+import xyz.finlaym.opendmx.driver.HardwareManager;
 import xyz.finlaym.opendmx.stage.ChannelRegistry;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
 import xyz.finlaym.opendmx.stage.StageLoader;
 import xyz.finlaym.opendmx.submaster.SubMasterLoader;
 import xyz.finlaym.opendmx.submaster.SubMasterSet;
+import xyz.finlaym.opendmx.ui.HardwareUI;
 import xyz.finlaym.opendmx.ui.ModeUI;
 
 public class OpenDMXStudio extends Application{
@@ -42,10 +41,11 @@ public class OpenDMXStudio extends Application{
 		launch(args);
 	}
 	
-	private ControllerHardware hardware = null;
+	private HardwareManager hwManager;
 	private Canvas canvas;
 	private StageContainer currentStage;
 	private ModeUI modeUI;
+	private HardwareUI hardwareUI;
 	private InterfaceMode mode = InterfaceMode.DEFAULT;
 	private int selected = -1;
 	private boolean dragged = false;
@@ -55,14 +55,7 @@ public class OpenDMXStudio extends Application{
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		// Get devices list from the hardware prober
-		SerialDevice[] devices = HardwareProbe.findDevices();
-		for(SerialDevice d : devices) {
-			if(d instanceof ControllerHardware) {
-				// Find first controller
-				hardware = (ControllerHardware) d;
-			}
-		}
+		hwManager = new HardwareManager();
 		
 		currentStage = StageLoader.loadStage(new File("test_stage/"));
 		masters = SubMasterLoader.loadSubMasters(currentStage,this);
@@ -180,10 +173,14 @@ public class OpenDMXStudio extends Application{
 		modeUI = new ModeUI(this);
 		modeUI.start(primaryStage);
 		
+		hardwareUI = new HardwareUI(this);
+		hardwareUI.start(primaryStage);
+		
 		timer.start();
 	}
-	public ControllerHardware getHardware() {
-		return hardware;
+
+	public HardwareManager getHardwareManager() {
+		return hwManager;
 	}
 
 	public InterfaceMode getMode() {
