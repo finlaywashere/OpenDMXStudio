@@ -205,13 +205,22 @@ public class ModeUI {
 		lblTitle.setFont(Font.font(FONT_MEDIUM));
 		root.add(lblTitle, 0, 0);
 		
+		String stageName = "None";
+		if(this.dmxStudio.getCurrentStage() != null) {
+			stageName = this.dmxStudio.getCurrentStage().getStageDir().getName();
+		}
+		
+		Label lblStage = new Label("Stage: "+stageName);
+		lblStage.setFont(Font.font(FONT_SMALL));
+		root.add(lblStage, 0, 1);
+		
 		Button btnLoad = new Button("Load Stage");
 		btnLoad.setFont(Font.font(FONT_SMALL));
-		root.add(btnLoad, 0, 1);
+		root.add(btnLoad, 0, 2);
 		
 		Button btnNew = new Button("Create Stage");
 		btnNew.setFont(Font.font(FONT_SMALL));
-		root.add(btnNew, 0, 2);
+		root.add(btnNew, 0, 3);
 		
 		Button btnBack = new Button("Back");
 		btnBack.setFont(Font.font(FONT_SMALL));
@@ -219,11 +228,11 @@ public class ModeUI {
 			reset();
 		});
 		
-		root.add(btnBack, 0, 4);
+		root.add(btnBack, 0, 5);
 		
 		Label lblStatus = new Label();
 		lblStatus.setFont(Font.font(FONT_SMALL));
-		root.add(lblStatus, 0, 5);
+		root.add(lblStatus, 0, 6);
 		
 		btnLoad.setOnAction(event -> {
 			DirectoryChooser chooser = new DirectoryChooser();
@@ -231,6 +240,9 @@ public class ModeUI {
 			File dir = chooser.showDialog(modeStage);
 			try {
 				dmxStudio.loadStage(dir);
+				dmxStudio.getPreferencesManager().setLastStage(dir);
+				dmxStudio.getPreferencesManager().save();
+				update();
 				lblStatus.setText("Successfully loaded stage!");
 			} catch (Exception e) {
 				lblStatus.setText("Error loading stage!");
@@ -245,6 +257,9 @@ public class ModeUI {
 				StageContainer container = new StageContainer(new ArrayList<StageElement>(), null, dir);
 				dmxStudio.setCurrentStage(container);
 				StageLoader.saveStage(dir, container);
+				dmxStudio.getPreferencesManager().setLastStage(dir);
+				dmxStudio.getPreferencesManager().save();
+				update();
 				lblStatus.setText("Successfully created stage!");
 			} catch (Exception e) {
 				lblStatus.setText("Error created stage!");
@@ -294,6 +309,7 @@ public class ModeUI {
 		buttons.add(lblName, 0, 1);
 		
 		TextField txtName = new TextField(master.getName());
+		txtName.setFont(Font.font(FONT_SMALL));
 		buttons.add(txtName, 1, 1);
 		
 		ListView<SubMasterEntry> entries = new ListView<SubMasterEntry>();

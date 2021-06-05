@@ -26,6 +26,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.cue.CueSet;
 import xyz.finlaym.opendmx.driver.HardwareManager;
+import xyz.finlaym.opendmx.preferences.PreferencesManager;
 import xyz.finlaym.opendmx.stage.ChannelRegistry;
 import xyz.finlaym.opendmx.stage.StageContainer;
 import xyz.finlaym.opendmx.stage.StageElement;
@@ -50,10 +51,17 @@ public class OpenDMXStudio extends Application{
 	private CueSet currCue = new CueSet();
 	private ChannelRegistry cRegistry = new ChannelRegistry();
 	private SubMasterSet masters;
+	private PreferencesManager pManager;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		hwManager = new HardwareManager();
+		this.hwManager = new HardwareManager();
+		this.pManager = new PreferencesManager();
+		
+		File lastStage = this.pManager.getLastStage();
+		if(lastStage != null) {
+			this.currentStage = StageLoader.loadStage(lastStage);
+		}
 		
 		// JavaFX stuff now
 		Group root = new Group();
@@ -220,5 +228,8 @@ public class OpenDMXStudio extends Application{
 	public void loadStage(File stage) throws Exception{
 		currentStage = StageLoader.loadStage(stage);
 		masters = SubMasterLoader.loadSubMasters(currentStage,this);
+	}
+	public PreferencesManager getPreferencesManager() {
+		return pManager;
 	}
 }

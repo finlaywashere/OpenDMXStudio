@@ -19,6 +19,7 @@ public class HardwareProbe {
 				IdentifyCommand c = new IdentifyCommand();
 				boolean exists = hardware.sendCommand(c);
 				if(exists) {
+					System.out.println("Found OpenDMXController on port "+hardware.getSerialPort().getSystemPortName());
 					hardware.setStatus(HardwareStatus.DISCONNECTED);
 					
 					SerialNumberCommand sn = new SerialNumberCommand();
