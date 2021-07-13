@@ -38,37 +38,39 @@ public class StageLoader {
 			stageImg = new Image(new FileInputStream(background));
 		File dataFile = new File(stageDir,"stage.data");
 		ArrayList<StageElement> elements = new ArrayList<StageElement>();
-		Scanner in = new Scanner(dataFile);
-		int version = Integer.valueOf(in.nextLine());
-		if(version == Constants.CONFIG_VERSION) {
-			while(in.hasNextLine()) {
-				String s = in.nextLine();
-				if(s.trim().isEmpty())
-					continue;
-				String[] split = s.split(":",8);
-				double x = Double.valueOf(split[0]);
-				double y = Double.valueOf(split[1]);
-				StageElementType type = StageElementType.valueOf(split[2]);
-				String name = split[3];
-				String[] split2 = split[4].split(",");
-				int length = Integer.valueOf(split2[0]);
-				Channel[] channels = new Channel[length];
-				for(int i = 0; i < length; i++) {
-					channels[i] = new Channel(Integer.valueOf(split2[i*4+1]),Integer.valueOf(split2[i*4+2]), ChannelType.valueOf(split2[i*4+3]), Integer.valueOf(split2[i*4+4]));
+		if(dataFile.exists()) {
+			Scanner in = new Scanner(dataFile);
+			int version = Integer.valueOf(in.nextLine());
+			if(version == Constants.CONFIG_VERSION) {
+				while(in.hasNextLine()) {
+					String s = in.nextLine();
+					if(s.trim().isEmpty())
+						continue;
+					String[] split = s.split(":",8);
+					double x = Double.valueOf(split[0]);
+					double y = Double.valueOf(split[1]);
+					StageElementType type = StageElementType.valueOf(split[2]);
+					String name = split[3];
+					String[] split2 = split[4].split(",");
+					int length = Integer.valueOf(split2[0]);
+					Channel[] channels = new Channel[length];
+					for(int i = 0; i < length; i++) {
+						channels[i] = new Channel(Integer.valueOf(split2[i*4+1]),Integer.valueOf(split2[i*4+2]), ChannelType.valueOf(split2[i*4+3]), Integer.valueOf(split2[i*4+4]));
+					}
+					int radius = Integer.valueOf(split[5]);
+					String[] split3 = split[6].split(",");
+					Color color = Color.rgb(Integer.valueOf(split3[0]),Integer.valueOf(split3[1]),Integer.valueOf(split3[2]));
+					int id = Integer.valueOf(split[7]);
+					StageElement elem = new StageElement(x,y,type,name,channels,radius,color,id);
+					elements.add(elem);
 				}
-				int radius = Integer.valueOf(split[5]);
-				String[] split3 = split[6].split(",");
-				Color color = Color.rgb(Integer.valueOf(split3[0]),Integer.valueOf(split3[1]),Integer.valueOf(split3[2]));
-				int id = Integer.valueOf(split[7]);
-				StageElement elem = new StageElement(x,y,type,name,channels,radius,color,id);
-				elements.add(elem);
+				in.close();
+			}else {
+				in.close();
+				System.err.println("Error: Attempted to load invalid/new configuration that is unsupported!");
+				// Handle the error with like an FX dialogue or smth idk
+				return null;
 			}
-			in.close();
-		}else {
-			in.close();
-			System.err.println("Error: Attempted to load invalid/new configuration that is unsupported!");
-			// Handle the error with like an FX dialogue or smth idk
-			return null;
 		}
 		return new StageContainer(elements,stageImg,stageDir);
 	}
@@ -78,7 +80,7 @@ public class StageLoader {
 		
 		if(stage.getBackground() != null) {
 			BufferedImage img = SwingFXUtils.fromFXImage(stage.getBackground(), null);
-			ImageIO.write(img, "JPG", new File(stageDir,"background.jpg"));
+			ImageIO.write(img, "jpg", new File(stageDir,"background.jpg"));
 		}
 		
 		File stageData = new File(stageDir,"stage.data");

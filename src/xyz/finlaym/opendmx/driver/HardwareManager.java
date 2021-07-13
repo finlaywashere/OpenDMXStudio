@@ -1,14 +1,15 @@
 package xyz.finlaym.opendmx.driver;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import xyz.finlaym.opendmx.command.Command;
-import xyz.finlaym.opendmx.command.SendCommand;
 
 public class HardwareManager {
 	
 	private SerialDevice[] devices;
-	private ControllerHardware[] hardware;
+	private List<ControllerHardware> hardware;
 	
 	public HardwareManager() {
 		setup();
@@ -16,43 +17,38 @@ public class HardwareManager {
 	
 	public void setup() {
 		devices = HardwareProbe.findDevices();
-		int count = 0;
+		hardware = new ArrayList<ControllerHardware>();
 		for(SerialDevice d : devices) {
 			if(d instanceof ControllerHardware) {
 				// Find first controller
-				count++;
+				hardware.add((ControllerHardware) d);
 			}
 		}
-		hardware = new ControllerHardware[count];
-		count = 0;
-		for(SerialDevice d : devices) {
-			if(d instanceof ControllerHardware) {
-				// Find first controller
-				hardware[count] = (ControllerHardware) d;
-				count++;
-			}
+	}
+	public int getTotalCommands() {
+		int total = 0;
+		for(ControllerHardware h : hardware) {
+			total += h.getTotalCommands();
 		}
+		return total;
+	}
+	public int getFailureCount() {
+		int total = 0;
+		for(ControllerHardware h : hardware) {
+			total += h.getFailureCount();
+		}
+		return total;
 	}
 	
 	public boolean sendCommand(Command c) throws IOException {
-		int curr = 0;
 		for(ControllerHardware h : hardware) {
-			if(c instanceof SendCommand) {
-				int universe = ((SendCommand)c).getUniverse();
-				if(curr + 1 >= universe && curr + h.getNumUniverses() <= universe) {
-					return h.sendCommand(c);
-				}else {
-					curr += h.getNumUniverses();
-				}
-			}else {
-				// Idk just send most commands to everything, this will be changed in a later release when (if) RDM support is added
-				if(!h.sendCommand(c))
-					return false;
-			}
+			// Idk just send to everything, this will be changed in a later release when (if) RDM support is added or when multi device support is added
+			if(!h.sendCommand(c))
+				return true;
 		}
 		return true;
 	}
-	public ControllerHardware[] getHardware() {
+	public List<ControllerHardware> getHardware() {
 		return hardware;
 	}
 

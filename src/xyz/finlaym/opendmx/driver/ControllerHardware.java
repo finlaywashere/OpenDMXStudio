@@ -7,12 +7,14 @@ import com.fazecast.jSerialComm.SerialPort;
 import xyz.finlaym.opendmx.command.Command;
 
 public class ControllerHardware extends SerialDevice{
-	private byte[] serialNumber;
-	private HardwareStatus status;
-	private int softwareVersion;
-	private int hardwareVersion;
-	private int protocol;
-	private int numUniverses;
+	protected byte[] serialNumber;
+	protected HardwareStatus status;
+	protected int softwareVersion;
+	protected int hardwareVersion;
+	protected int protocol;
+	protected int numUniverses;
+	protected int totalCommands;
+	protected int failureCount;
 	
 	public ControllerHardware(SerialPort serialPort, HardwareStatus status) {
 		super(serialPort);
@@ -54,6 +56,12 @@ public class ControllerHardware extends SerialDevice{
 	public void setNumUniverses(int numUniverses) {
 		this.numUniverses = numUniverses;
 	}
+	public int getTotalCommands() {
+		return totalCommands;
+	}
+	public int getFailureCount() {
+		return failureCount;
+	}
 	public String getSeralNumberString() {
 		String sn = "";
 		int middle = serialNumber.length/2-1;
@@ -65,6 +73,7 @@ public class ControllerHardware extends SerialDevice{
 		return sn;
 	}
 	public boolean sendCommand(Command c) throws IOException {
+		totalCommands++;
 		byte[] data = c.encode();
 		if(!serialPort.isOpen()) {
 			System.err.println("Error: Port is not open!");
@@ -74,6 +83,9 @@ public class ControllerHardware extends SerialDevice{
 		serialPort.writeBytes(data, data.length);
 		byte[] response = new byte[c.responseLength()];
 		serialPort.readBytes(response, response.length);
-		return c.handleResponse(response, this);
+		boolean success = c.handleResponse(response, this);
+		if(!success)
+			failureCount++;
+		return success;
 	}
 }

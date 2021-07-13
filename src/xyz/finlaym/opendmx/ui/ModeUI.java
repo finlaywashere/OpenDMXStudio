@@ -55,6 +55,7 @@ import xyz.finlaym.opendmx.cue.CueEntry;
 import xyz.finlaym.opendmx.cue.CueLoader;
 import xyz.finlaym.opendmx.cue.CueSet;
 import xyz.finlaym.opendmx.cue.CueTransitionType;
+import xyz.finlaym.opendmx.driver.HardwareManager;
 import xyz.finlaym.opendmx.stage.Channel;
 import xyz.finlaym.opendmx.stage.ChannelType;
 import xyz.finlaym.opendmx.stage.StageContainer;
@@ -67,6 +68,7 @@ import xyz.finlaym.opendmx.submaster.SubMasterEntryType;
 import xyz.finlaym.opendmx.submaster.SubMasterLoader;
 import xyz.finlaym.opendmx.submaster.SubMasterSet;
 import xyz.finlaym.opendmx.submaster.SubMasterType;
+import xyz.finlaym.opendmx.virtualdevice.VirtualDeviceUI;
 
 public class ModeUI {
 	private Stage modeStage;
@@ -176,6 +178,28 @@ public class ModeUI {
 		});
 		root.add(btnStageMenu, 1, 1, 2, 1);
 		
+		Button btnVirtualDevice = new Button("Virtual Device");
+		btnVirtualDevice.setFont(Font.font(FONT_SMALL));
+		btnVirtualDevice.setOnAction(event -> {
+			new VirtualDeviceUI(dmxStudio).start(modeStage);
+			update();
+		});
+		root.add(btnVirtualDevice, 1, 2, 2, 1);
+		
+		String text = "Device Status: ";
+		HardwareManager manager = dmxStudio.getHardwareManager();
+		int numDevices = manager.getHardware().size();
+		if(numDevices == 0) {
+			text += "No devices connected\n";
+		}else {
+			text += numDevices + " devices connected\n";
+		}
+		text += "Command Failure Rate: "+manager.getFailureCount()+"/"+manager.getTotalCommands()+"\n";
+		text += "Protocol Support: DMX512\n";
+		
+		Label lblStatus = new Label(text);
+		lblStatus.setFont(Font.font(FONT_SMALL));
+		root.add(lblStatus, 1, 5, 1, 4);
 		
 		Button btnExit = new Button("Exit");
 		btnExit.setOnAction(event -> {
@@ -222,6 +246,10 @@ public class ModeUI {
 		btnNew.setFont(Font.font(FONT_SMALL));
 		root.add(btnNew, 0, 3);
 		
+		Button btnSave = new Button("Save Stage");
+		btnSave.setFont(Font.font(FONT_SMALL));
+		root.add(btnSave, 0, 4);
+		
 		Button btnBack = new Button("Back");
 		btnBack.setFont(Font.font(FONT_SMALL));
 		btnBack.setOnAction(event -> {
@@ -238,6 +266,8 @@ public class ModeUI {
 			DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setTitle("Load Stage");
 			File dir = chooser.showDialog(modeStage);
+			if(dir == null)
+				return;
 			try {
 				dmxStudio.loadStage(dir);
 				dmxStudio.getPreferencesManager().setLastStage(dir);
@@ -253,6 +283,8 @@ public class ModeUI {
 			DirectoryChooser chooser = new DirectoryChooser();
 			chooser.setTitle("Create Stage");
 			File dir = chooser.showDialog(modeStage);
+			if(dir == null)
+				return;
 			try {
 				StageContainer container = new StageContainer(new ArrayList<StageElement>(), null, dir);
 				dmxStudio.setCurrentStage(container);
@@ -264,6 +296,15 @@ public class ModeUI {
 			} catch (Exception e) {
 				lblStatus.setText("Error created stage!");
 				e.printStackTrace();
+			}
+		});
+		btnSave.setOnAction(event -> {
+			try {
+				StageContainer stage = dmxStudio.getCurrentStage();
+				StageLoader.saveStage(stage.getStageDir(), stage);
+			}catch(Exception e) {
+				e.printStackTrace();
+				lblStatus.setText("Error saving stage!");
 			}
 		});
 		
@@ -548,23 +589,17 @@ public class ModeUI {
 		lblTitle.setFont(Font.font(FONT_MEDIUM));
 		root.add(lblTitle, 0, 0);
 		
-		Button btnLoad = new Button("Load Stage");
-		root.add(btnLoad, 0, 1);
-		
-		Button btnSave = new Button("Save Stage");
-		root.add(btnSave, 1, 1);
-		
 		Button btnAddDevice = new Button("Add DMX512 Device");
-		root.add(btnAddDevice, 0, 3);
+		root.add(btnAddDevice, 0, 1);
 		
 		Button btnSetBackground = new Button("Set Background");
-		root.add(btnSetBackground, 0, 4);
+		root.add(btnSetBackground, 0, 2);
 		
 		Button btnConfigureSubmasters = new Button("Configure Submasters");
-		root.add(btnConfigureSubmasters, 0, 5);
+		root.add(btnConfigureSubmasters, 0, 3);
 		
 		Button btnBack = new Button("Back");
-		root.add(btnBack, 0, 7);
+		root.add(btnBack, 0, 5);
 		
 		Label lblStatus = new Label();
 		lblStatus.setFont(Font.font(FONT_SMALL));
@@ -573,30 +608,6 @@ public class ModeUI {
 		btnConfigureSubmasters.setOnAction(event -> {
 			submaster = true;
 			update();
-		});
-		
-		btnLoad.setOnAction(event -> {
-			DirectoryChooser dChooser = new DirectoryChooser();
-			dChooser.setTitle("Load Stage");
-			File stageDir = dChooser.showDialog(modeStage);
-			
-			try {
-				StageContainer stage = StageLoader.loadStage(stageDir);
-				dmxStudio.setCurrentStage(stage);
-				update();
-			} catch (Exception e) {
-				e.printStackTrace();
-				lblStatus.setText("Error loading stage!");
-			}
-		});
-		btnSave.setOnAction(event -> {
-			try {
-				StageContainer stage = dmxStudio.getCurrentStage();
-				StageLoader.saveStage(stage.getStageDir(), stage);
-			}catch(Exception e) {
-				e.printStackTrace();
-				lblStatus.setText("Error saving stage!");
-			}
 		});
 		btnAddDevice.setOnAction(event -> {
 			StageContainer stage = dmxStudio.getCurrentStage();
@@ -1159,26 +1170,28 @@ public class ModeUI {
 			sliders.setPadding(new Insets(GAP,GAP,GAP,GAP));
 			
 			int i = 0;
-			for(SubMaster m : dmxStudio.getMasters().getMasters()) {
-				Label lblName = new Label(m.getName());
-				lblName.setFont(Font.font(FONT_SMALL));
-				sliders.add(lblName, i, 0);
-				Slider sldMaster = new Slider(0,255,m.getValue());
-				sldMaster.setOrientation(Orientation.VERTICAL);
-				final int index = i;
-				sldMaster.valueProperty().addListener(new ChangeListener<Number>(){
-					@Override
-					public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-						try {
-							dmxStudio.getMasters().getMasters().get(index).setValue((int)((double) newValue), dmxStudio);
-						} catch (IOException e) {
-							e.printStackTrace();
-							lblStatus.setText("Error setting channel!");
+			if(dmxStudio.getMasters() != null) {
+				for(SubMaster m : dmxStudio.getMasters().getMasters()) {
+					Label lblName = new Label(m.getName());
+					lblName.setFont(Font.font(FONT_SMALL));
+					sliders.add(lblName, i, 0);
+					Slider sldMaster = new Slider(0,255,m.getValue());
+					sldMaster.setOrientation(Orientation.VERTICAL);
+					final int index = i;
+					sldMaster.valueProperty().addListener(new ChangeListener<Number>(){
+						@Override
+						public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+							try {
+								dmxStudio.getMasters().getMasters().get(index).setValue((int)((double) newValue), dmxStudio);
+							} catch (IOException e) {
+								e.printStackTrace();
+								lblStatus.setText("Error setting channel!");
+							}
 						}
-					}
-				});
-				sliders.add(sldMaster, i, 1);
-				i++;
+					});
+					sliders.add(sldMaster, i, 1);
+					i++;
+				}
 			}
 			root.add(sliders, 0, 6);
 			btnApply.setOnAction(event -> {

@@ -37,7 +37,13 @@ import xyz.finlaym.opendmx.ui.ModeUI;
 
 public class OpenDMXStudio extends Application{
 	
+	public static boolean DEBUG = false;
+	
 	public static void main(String[] args) {
+		for(String s : args) {
+			if(s.equalsIgnoreCase("--debug"))
+				DEBUG = true;
+		}
 		launch(args);
 	}
 	
