@@ -79,7 +79,6 @@ public class ControllerHardware extends SerialDevice{
 			System.err.println("Error: Port is not open!");
 			return false;
 		}
-		
 		serialPort.writeBytes(data, data.length);
 		byte[] response = new byte[c.responseLength()];
 		serialPort.readBytes(response, response.length);

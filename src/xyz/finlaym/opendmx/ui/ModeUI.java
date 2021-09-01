@@ -771,7 +771,7 @@ public class ModeUI {
 				}
 				if(maxId < 0)
 					maxId = 0;
-				Channel c = new Channel(0, 0, ChannelType.LIGHT_OTHER,maxId+1);
+				Channel c = new Channel(0, 0, ChannelType.LIGHT_OTHER,maxId+1,0);
 				newChannels[elem.getChannels().length] = c;
 				
 				cbxChannels.getItems().remove(cbxChannels.getItems().size()-1); // Remove add channel box
@@ -952,9 +952,9 @@ public class ModeUI {
 							}
 						}
 					}
-					Channel c1 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId());
+					Channel c1 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId(),c.getMode());
 					c1.setCurrValRaw(oldValue);
-					Channel c2 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId());
+					Channel c2 = new Channel(c.getUniverse(), c.getChannel(), c.getType(), c.getId(),c.getMode());
 					c2.setCurrValRaw(c.getCurrValRaw());
 					CueEntry entry = new CueEntry(c2, c1, cbxTypes.getSelectionModel().getSelectedItem(),sldTime.getValue());
 					cue.getEntries().add(entry);
@@ -1202,7 +1202,7 @@ public class ModeUI {
 				int universe = Integer.valueOf(txtUniverse.getText());
 				int channel = Integer.valueOf(txtChannel.getText());
 				int value = (int) sldValue.getValue();
-				SendCommand cmd = new SendCommand(universe, channel, value);
+				SendCommand cmd = new SendCommand(universe, channel, value, Channel.MODE_DEFAULT);
 				try {
 					dmxStudio.getHardwareManager().sendCommand(cmd);
 				} catch(NullPointerException e) {
@@ -1299,7 +1299,7 @@ public class ModeUI {
 					}
 					if(value != -1) {
 						chn.setCurrVal(value,dmxStudio);
-						SendCommand cmd = new SendCommand(chn.getUniverse(), chn.getChannel(), value);
+						SendCommand cmd = new SendCommand(chn.getUniverse(), chn.getChannel(), value, chn.getMode());
 						try {
 							dmxStudio.getHardwareManager().sendCommand(cmd);
 						} catch(NullPointerException e) {
@@ -1328,7 +1328,7 @@ public class ModeUI {
 						b = value;
 					
 					c.setCurrVal(value,dmxStudio);
-					SendCommand cmd = new SendCommand(c.getUniverse(), c.getChannel(), value);
+					SendCommand cmd = new SendCommand(c.getUniverse(), c.getChannel(), value, c.getMode());
 					try {
 						dmxStudio.getHardwareManager().sendCommand(cmd);
 					} catch(NullPointerException e) {

@@ -17,19 +17,26 @@ package xyz.finlaym.opendmx.stage;
 import xyz.finlaym.opendmx.OpenDMXStudio;
 
 public class Channel {
+	public static final int MODE_DEFAULT = 0;
+	
 	private int universe;
 	private int channel;
 	private ChannelType type;
 	private int currVal = 0;
 	private int id;
+	private int mode;
 	
-	public Channel(int universe, int channel, ChannelType type, int id) {
+	public Channel(int universe, int channel, ChannelType type, int id, int mode) {
 		this.channel = channel;
 		this.type = type;
 		this.universe = universe;
 		this.id = id;
+		this.mode = mode;
 	}
-	
+	public int getMode() {
+		return mode;
+	}
+
 	public int getId() {
 		return id;
 	}
@@ -75,11 +82,12 @@ public class Channel {
 		return universe+","+channel+","+type.toString()+","+id;
 	}
 	public static Channel fromString(String s) {
-		String[] split = s.split(",",4);
+		String[] split = s.split(",",5);
 		int universe = Integer.valueOf(split[0]);
 		int channel = Integer.valueOf(split[1]);
 		ChannelType type = ChannelType.valueOf(split[2]);
 		int id = Integer.valueOf(split[3]);
-		return new Channel(universe,channel,type,id);
+		int mode = Integer.valueOf(split[4]);
+		return new Channel(universe,channel,type,id,mode);
 	}
 }

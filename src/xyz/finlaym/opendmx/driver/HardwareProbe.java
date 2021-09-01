@@ -4,6 +4,7 @@ import com.fazecast.jSerialComm.SerialPort;
 
 import xyz.finlaym.opendmx.OpenDMXStudio;
 import xyz.finlaym.opendmx.command.IdentifyCommand;
+import xyz.finlaym.opendmx.command.InitializeCommand;
 import xyz.finlaym.opendmx.command.SerialNumberCommand;
 
 public class HardwareProbe {
@@ -28,6 +29,12 @@ public class HardwareProbe {
 					boolean success = hardware.sendCommand(sn);
 					if(!success) {
 						System.err.println("Error probing hardware serial number!");
+					}
+					InitializeCommand ic = new InitializeCommand();
+					success = hardware.sendCommand(ic);
+					if(!success) {
+						System.err.println("Failed to initialize controller on port "+hardware.getSerialPort().getSystemPortName()+"!");
+						continue;
 					}
 					if(success && OpenDMXStudio.DEBUG)
 						System.out.println("Data for OpenDMXController on port "+hardware.getSerialPort().getSystemPortName()+": SN "+hardware.getSeralNumberString());

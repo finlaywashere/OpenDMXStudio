@@ -55,7 +55,7 @@ public class StageLoader {
 					int length = Integer.valueOf(split2[0]);
 					Channel[] channels = new Channel[length];
 					for(int i = 0; i < length; i++) {
-						channels[i] = new Channel(Integer.valueOf(split2[i*4+1]),Integer.valueOf(split2[i*4+2]), ChannelType.valueOf(split2[i*4+3]), Integer.valueOf(split2[i*4+4]));
+						channels[i] = new Channel(Integer.valueOf(split2[i*5+1]),Integer.valueOf(split2[i*5+2]), ChannelType.valueOf(split2[i*5+3]), Integer.valueOf(split2[i*5+4]), Integer.valueOf(split2[i*5+5]));
 					}
 					int radius = Integer.valueOf(split[5]);
 					String[] split3 = split[6].split(",");

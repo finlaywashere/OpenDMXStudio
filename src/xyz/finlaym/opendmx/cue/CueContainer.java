@@ -57,7 +57,7 @@ public class CueContainer {
 						double dps = diff/e.getTransitionTime();
 						int newValue = e.getOldValue().getCurrValRaw() + (int) (timeElapsed * dps);
 						Channel c = e.getNewValue();
-						SendCommand cmd = new SendCommand(c.getUniverse(),c.getChannel(),newValue);
+						SendCommand cmd = new SendCommand(c.getUniverse(),c.getChannel(),newValue, c.getMode());
 						hardwareManager.sendCommand(cmd);
 					}else {
 						Channel c = e.getNewValue();

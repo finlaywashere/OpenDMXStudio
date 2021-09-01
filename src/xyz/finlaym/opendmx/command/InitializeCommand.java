@@ -5,13 +5,18 @@ import xyz.finlaym.opendmx.driver.HardwareStatus;
 
 public class InitializeCommand extends Command {
 
+	private int universeSize = 512;
+	public InitializeCommand(int universeSize) {
+		super((byte) 5);
+		this.universeSize = universeSize;
+	}
 	public InitializeCommand() {
 		super((byte) 5);
 	}
 
 	@Override
 	public byte[] encode() {
-		return new byte[] {commandCode};
+		return new byte[] {commandCode, (byte) universeSize, (byte) (universeSize >> 8)};
 	}
 
 	@Override
