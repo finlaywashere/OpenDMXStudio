@@ -22,7 +22,7 @@ public class SerialNumberCommand extends Command {
 	@Override
 	public boolean handleResponse(byte[] response, ControllerHardware hardware) {
 		if(response[0] != commandCode) return false;
-		byte[] sn = new byte[2];
+		byte[] sn = new byte[8];
 		for(int i = 1; i < response.length; i++) {
 			sn[i-1] = response[i];
 		}
