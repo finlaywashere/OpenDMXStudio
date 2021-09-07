@@ -40,6 +40,15 @@ public class Utils {
 			return false;
 		}
 	}
+	@SuppressWarnings("unused")
+	public static boolean isByte(String s) {
+		try {
+			byte b = Byte.decode(s);
+			return true;
+		}catch(NumberFormatException e) {
+			return false;
+		}
+	}
 	public static Channel locateChannel(int id, OpenDMXStudio dmx) {
 		for(StageElement e : dmx.getCurrentStage().getElements()) {
 			for(Channel c : e.getChannels()) {
