@@ -14,17 +14,22 @@
 
 package xyz.finlaym.opendmx.command;
 
-public abstract class Command {
-	
-	protected byte commandCode;
-	public Command(byte commandCode) {
-		this.commandCode = commandCode;
-	}
-	
-	public byte getCommandCode() {
-		return commandCode;
-	}
+import xyz.finlaym.opendmx.driver.ControllerHardware;
 
-	public abstract byte[] encode();
-	public abstract int responseLength();
+public abstract class CommandResponse {
+	protected boolean success = false;
+	private byte[] bytes;
+
+	public CommandResponse(byte[] bytes) {
+		this.bytes = bytes;
+	}
+	public abstract boolean validate(Command cmd);
+	public abstract boolean applyResponse(ControllerHardware hardware);
+	
+	public boolean isSuccess() {
+		return success;
+	}
+	public byte[] getBytes() {
+		return bytes;
+	}
 }

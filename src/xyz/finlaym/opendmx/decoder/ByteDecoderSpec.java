@@ -12,19 +12,26 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-package xyz.finlaym.opendmx.command;
+package xyz.finlaym.opendmx.decoder;
 
-public abstract class Command {
+public class ByteDecoderSpec {
+	private ByteDecoderType type;
+	private int length;
+	private String name;
 	
-	protected byte commandCode;
-	public Command(byte commandCode) {
-		this.commandCode = commandCode;
+	public ByteDecoderSpec(ByteDecoderType type, int length, String name) {
+		this.type = type;
+		this.length = length;
+		this.name = name;
 	}
 	
-	public byte getCommandCode() {
-		return commandCode;
+	public ByteDecoderType getType() {
+		return type;
 	}
-
-	public abstract byte[] encode();
-	public abstract int responseLength();
+	public int getLength() {
+		return length;
+	}
+	public String getName() {
+		return name;
+	}
 }
