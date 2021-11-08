@@ -14,7 +14,11 @@
 
 package xyz.finlaym.opendmx;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -22,7 +26,11 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import xyz.finlaym.opendmx.cue.CueSet;
 import xyz.finlaym.opendmx.driver.HardwareManager;
@@ -61,6 +69,33 @@ public class OpenDMXStudio extends Application{
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		UpdateChecker checker = new UpdateChecker();
+		boolean update = checker.checkUpdate();
+		if(update) {
+			System.out.println("An update is available!");
+			Stage dialog = new Stage();
+			dialog.initModality(Modality.APPLICATION_MODAL);
+			dialog.initOwner(primaryStage);
+			VBox dialogVbox = new VBox(20);
+			dialogVbox.getChildren().add(new Text("An update is available!"));
+			final Hyperlink dialogLink = new Hyperlink(Constants.UPDATE_URL);
+			dialogLink.setOnAction(event -> {
+				String s = dialogLink.getText();
+				try {
+					Desktop.getDesktop().browse(new URI(s));
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (URISyntaxException e) {
+					e.printStackTrace();
+				}
+				event.consume();
+			});
+			dialogVbox.getChildren().add(dialogLink);
+	        Scene dialogScene = new Scene(dialogVbox, 300, 200);
+	        dialog.setScene(dialogScene);
+	        dialog.show();
+		}
+		
 		this.hwManager = new HardwareManager();
 		this.pManager = new PreferencesManager();
 		

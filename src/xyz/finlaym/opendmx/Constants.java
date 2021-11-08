@@ -18,4 +18,8 @@ public class Constants {
 	public static final int VERSION_MAJOR = 1;
 	public static final int VERSION_MINOR = 0;
 	public static final int CONFIG_VERSION = 1;
+	public static final String AUTHOR = "Finlay Maroney";
+	public static final int COPYRIGHT_YEAR = 2021;
+	public static final String UPDATE_ENDPOINT = "https://update.finlaym.xyz/opendmxstudio/version.txt";
+	public static final String UPDATE_URL = "https://finlaym.xyz/software/opendmxstudio/";
 }
